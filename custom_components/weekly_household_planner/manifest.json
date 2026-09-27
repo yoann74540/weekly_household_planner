@@ -7,7 +7,9 @@
   ],
   "documentation": "https://github.com/yoann74540/weekly_household_planner",
   "issue_tracker": "https://github.com/yoann74540/weekly_household_planner/issues",
-  "dependencies": [],
+    "dependencies": [
+    "http"
+    ],
   "integration_type": "service",
   "iot_class": "calculated",
   "config_flow": true,
