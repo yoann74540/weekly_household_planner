@@ -1,0 +1,39 @@
+{
+    "title": "Weekly Household Planner",
+    "config": {
+        "step": {
+            "user": {
+                "title": "Créer un planning",
+                "description": "Créez votre planning hebdomadaire de tâches.",
+                "data": {
+                    "name": "Nom"
+                }
+            },
+            "reconfigure": {
+                "title": "Acteurs",
+                "description": "Définissez les personnes ou appareils pouvant réaliser les tâches.",
+                "data": {
+                    "actors": "Acteurs disponibles"
+                }
+            },
+            "parameters": {
+                "title": "Paramètres",
+                "description": "Définissez les paramètres utilisables par les tâches et leurs valeurs.",
+                "data": {
+                    "new_parameter": "Ajouter un paramètre"
+                }
+            },
+            "tasks": {
+                "title": "Tâches",
+                "description": "Choisissez les acteurs et paramètres disponibles pour chaque tâche.",
+                "data": {
+                    "new_task": "Ajouter une tâche"
+                }
+            },
+            "task_parameters": {
+                "title": "Configuration des paramètres",
+                "description": "Définissez comment chaque paramètre doit être renseigné lors de la création d'une tâche."
+            }
+        }
+    }
+}

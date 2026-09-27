@@ -1,0 +1,15 @@
+{
+  "domain": "weekly_household_planner",
+  "name": "Weekly Household Planner",
+  "version": "0.1.0",
+  "codeowners": [
+    "@yoann74540"
+  ],
+  "documentation": "https://github.com/yoann74540/weekly_household_planner",
+  "issue_tracker": "https://github.com/yoann74540/weekly_household_planner/issues",
+  "dependencies": [],
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "config_flow": true,
+  "single_config_entry": true
+}

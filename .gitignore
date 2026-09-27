@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Home Assistant
+.storage/
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# Misc
+.cache/

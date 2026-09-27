@@ -1,0 +1,101 @@
+add_task:
+  name: Add task
+  description: Add a task to the weekly planner.
+  fields:
+    day:
+      name: Day
+      required: true
+      selector:
+        select:
+          options:
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+            - sunday
+
+    who:
+      name: Actor
+      description: Actor that will perform the task.
+      required: true
+      selector:
+        text:
+
+    task:
+      name: Task
+      description: Task type defined in the planner.
+      required: true
+      selector:
+        text:
+
+    parameters:
+      name: Parameters
+      description: Additional parameters defined for this task.
+      required: false
+      selector:
+        object:
+
+remove_task:
+  name: Remove task
+  description: Remove a task from the weekly planner.
+  fields:
+    id:
+      name: Task ID
+      required: true
+      selector:
+        text:
+
+update_task:
+  name: Update task
+  description: Update an existing task.
+  fields:
+    id:
+      name: Task ID
+      required: true
+      selector:
+        text:
+
+    day:
+      name: Day
+      required: true
+      selector:
+        select:
+          options:
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+            - sunday
+
+    who:
+      name: Actor
+      description: Actor that will perform the task.
+      required: true
+      selector:
+        text:
+
+    task:
+      name: Task
+      description: Task type defined in the planner.
+      required: true
+      selector:
+        text:
+
+    parameters:
+      name: Parameters
+      description: Additional parameters defined for this task.
+      required: false
+      selector:
+        object:
+
+get_schedule:
+  name: Get schedule
+  description: Return the complete weekly schedule.
+
+get_definition:
+  name: Get definition
+  description: Return the planner definition.
