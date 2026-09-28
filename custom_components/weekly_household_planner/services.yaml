@@ -99,3 +99,37 @@ get_schedule:
 get_definition:
   name: Get definition
   description: Return the planner definition.
+
+get_tasks:
+  name: Get tasks
+  description: Return scheduled tasks matching optional filters.
+  fields:
+    day:
+      name: Day
+      description: Day to query. Use "today" for the current day.
+      required: false
+      selector:
+        select:
+          options:
+            - today
+            - monday
+            - tuesday
+            - wednesday
+            - thursday
+            - friday
+            - saturday
+            - sunday
+
+    who:
+      name: Actor
+      description: Only return tasks assigned to this actor.
+      required: false
+      selector:
+        text:
+
+    task:
+      name: Task
+      description: Only return tasks of this type.
+      required: false
+      selector:
+        text:

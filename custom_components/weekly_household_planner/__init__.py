@@ -26,6 +26,7 @@ from .const import DOMAIN
 from .models import Day, Task
 
 from .definition import PlannerDefinition
+from homeassistant.util import dt as dt_util
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -55,6 +56,16 @@ UPDATE_TASK_SCHEMA = vol.Schema(
         vol.Required("who"): cv.string,
         vol.Required("task"): cv.string,
         vol.Optional("parameters", default={}): dict,
+    }
+)
+
+GET_TASKS_SCHEMA = vol.Schema(
+    {
+        vol.Optional("day"): vol.In(
+            ["today", *[day.value for day in Day]]
+        ),
+        vol.Optional("who"): cv.string,
+        vol.Optional("task"): cv.string,
     }
 )
 
@@ -229,6 +240,42 @@ async def async_setup(
             "schedule": planner.get_schedule(),
         }
 
+    async def async_get_tasks(
+        call: ServiceCall,
+    ) -> ServiceResponse:
+        """Return tasks matching the requested filters."""
+
+        entries = hass.config_entries.async_entries(DOMAIN)
+
+        if not entries:
+            return {"tasks": []}
+
+        planner = entries[0].runtime_data
+
+        requested_day = call.data.get("day")
+
+        if requested_day == "today":
+            day = Day(
+                dt_util.now().strftime("%A").lower()
+            )
+        elif requested_day is not None:
+            day = Day(requested_day)
+        else:
+            day = None
+
+        tasks = planner.get_tasks(
+            day=day,
+            who=call.data.get("who"),
+            task=call.data.get("task"),
+        )
+
+        return {
+            "tasks": [
+                task.to_dict()
+                for task in tasks
+            ]
+        }
+
     async def async_get_definition(
         call: ServiceCall,
     ) -> ServiceResponse:
@@ -281,6 +328,14 @@ async def async_setup(
         DOMAIN,
         "get_schedule",
         async_get_schedule,
+        supports_response=SupportsResponse.ONLY,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "get_tasks",
+        async_get_tasks,
+        schema=GET_TASKS_SCHEMA,
         supports_response=SupportsResponse.ONLY,
     )
 
