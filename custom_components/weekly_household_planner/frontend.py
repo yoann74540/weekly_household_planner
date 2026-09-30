@@ -2,13 +2,15 @@
 
 from pathlib import Path
 
+from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 
 
 FRONTEND_PATH = Path(__file__).parent / "frontend"
-
 FRONTEND_URL = "/weekly_household_planner"
+
+CARD_URL = f"{FRONTEND_URL}/weekly-planner-card.js"
 
 
 async def async_setup_frontend(
@@ -24,4 +26,9 @@ async def async_setup_frontend(
                 False,
             )
         ]
+    )
+
+    add_extra_js_url(
+        hass,
+        CARD_URL,
     )
