@@ -146,6 +146,7 @@ The integration exposes the following actions:
 
 - `weekly_household_planner.get_definition`
 - `weekly_household_planner.get_schedule`
+- `weekly_household_planner.get_tasks`
 - `weekly_household_planner.add_task`
 - `weekly_household_planner.update_task`
 - `weekly_household_planner.remove_task`
@@ -166,15 +167,70 @@ data:
       - living_room
 ```
 
+## Using tasks in automations
+
+Weekly Household Planner is intentionally device-independent.
+
+It manages **what should be done and when**, while Home Assistant automations and scripts decide **how the task should be executed**.
+
+The `get_tasks` action can be used to retrieve scheduled tasks using optional filters such as the day, actor, or task type.
+
+For example, retrieve all tasks assigned to `robot` for the current day:
+
+```yaml
+- action: weekly_household_planner.get_tasks
+  data:
+    day: today
+    who: robot
+  response_variable: planner
+```
+
+The response contains the matching tasks:
+
+```yaml
+tasks:
+  - id: "..."
+    day: monday
+    who: robot
+    task: vacuum
+    parameters:
+      room:
+        - kitchen
+        - living_room
+```
+
+The returned tasks can then be used in an automation:
+
+```yaml
+- action: weekly_household_planner.get_tasks
+  data:
+    day: today
+    who: robot
+  response_variable: planner
+
+- repeat:
+    for_each: "{{ planner.tasks }}"
+    sequence:
+      - action: script.execute_household_task
+        data:
+          task: "{{ repeat.item.task }}"
+          parameters: "{{ repeat.item.parameters }}"
+```
+
+The script or automation is responsible for translating the generic task into device-specific actions.
+
+This keeps Weekly Household Planner independent from specific devices and integrations while allowing it to control real-world workflows through Home Assistant automations.
+
+
 ## How it works
 
 Weekly Household Planner manages the **planning and organization** of tasks.
 
-It does not currently execute household tasks itself.
+It intentionally does not execute household tasks or control devices directly.
 
-For example, adding a `vacuum` task for a robot records the task in the weekly schedule, but does not directly start a vacuum cleaner.
+For example, adding a `vacuum` task for a robot records the task in the weekly schedule but does not directly start a vacuum cleaner.
 
-Home Assistant automations can use the planner data to implement task execution.
+Home Assistant automations and scripts can retrieve scheduled tasks using `get_tasks` and translate them into actions for specific devices or integrations.
 
 ## Updating the planner configuration
 

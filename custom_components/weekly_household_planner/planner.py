@@ -98,6 +98,22 @@ class WeeklyPlanner:
 
         return None
 
+    def get_tasks(
+        self,
+        day: Day | None = None,
+        who: str | None = None,
+        task: str | None = None,
+    ) -> list[Task]:
+        """Return tasks matching the requested filters."""
+
+        return [
+            scheduled_task
+            for scheduled_task in self.tasks
+            if (day is None or scheduled_task.day == day)
+            and (who is None or scheduled_task.who == who)
+            and (task is None or scheduled_task.task == task)
+        ]
+
     def _has_duplicate(
         self,
         task: Task,
