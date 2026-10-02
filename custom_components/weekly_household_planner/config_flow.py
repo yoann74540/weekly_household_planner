@@ -160,7 +160,7 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 # Remove empty values just in case.
                 values = [
-                    value
+                    value.strip()
                     for value in values
                     if value
                 ]
