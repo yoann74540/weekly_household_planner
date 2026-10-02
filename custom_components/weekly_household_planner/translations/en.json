@@ -16,6 +16,10 @@
                     "actors": "Available actors"
                 }
             },
+            "actor_colors": {
+                "title": "Actor colors",
+                "description": "Choose a color for each actor. This color will be used to visually identify their tasks in the planner."
+            },
             "parameters": {
                 "title": "Parameters",
                 "description": "Define the parameters available to tasks and their possible values.",

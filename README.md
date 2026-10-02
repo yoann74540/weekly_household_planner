@@ -11,6 +11,7 @@ The planner is generic: tasks can be performed by people, robots, or any other a
 
 - 📅 Weekly household task planning
 - 👤 Configurable actors
+- 🎨 Configurable color for each actor
 - 🧹 Configurable task types
 - ⚙️ Custom task parameters
 - 🗓 Native Home Assistant calendar
@@ -89,6 +90,10 @@ Examples:
 - `alice`
 - `bob`
 
+After defining the actors, a color can be assigned to each one using Home Assistant's color selector.
+
+Actor colors are used in the weekly planner card to visually distinguish tasks assigned to different actors.
+
 ### Parameters
 
 Parameters describe additional information associated with tasks.
@@ -125,9 +130,12 @@ Required: yes
 
 The integration includes a Lovelace card for managing the weekly schedule directly from the Home Assistant dashboard.
 
+Tasks are displayed as color-coded tiles using the color configured for each actor, making it easy to identify who or what is responsible for a task.
+
 It allows you to:
 
 - view tasks grouped by weekday;
+- visually identify tasks by actor color;
 - add a task;
 - add the same task to multiple days;
 - edit a task;
@@ -238,7 +246,7 @@ The integration can be reconfigured from:
 
 **Settings → Devices & services → Weekly Household Planner → Configure**
 
-Actors, parameters and task definitions can be modified after installation.
+Actors, actor colors, parameters and task definitions can be modified after installation.
 
 The planner automatically reconciles scheduled tasks when their definition changes.
 

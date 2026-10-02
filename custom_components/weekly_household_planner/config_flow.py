@@ -12,6 +12,8 @@ from .config_schema import (
     build_tasks_schema,
 )
 
+from homeassistant.helpers.selector import ColorRGBSelector
+
 from .const import DOMAIN
 from .definition import (
     ParameterDefinition,
@@ -29,6 +31,10 @@ def create_default_definition() -> PlannerDefinition:
             "robot",
             "manual",
         ],
+        actor_colors={
+            "robot": "#42A5F5",
+            "manual": "#66BB6A",
+        },
         parameters={
             "room": ParameterDefinition(
                 values=[
@@ -62,6 +68,17 @@ def create_default_definition() -> PlannerDefinition:
     )
 
 
+def hex_to_rgb(color: str) -> list[int]:
+    """Convert a hexadecimal color to RGB."""
+    color = color.lstrip("#")
+
+    return [
+        int(color[0:2], 16),
+        int(color[2:4], 16),
+        int(color[4:6], 16),
+    ]
+
+
 class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle a config flow for Weekly Household Planner."""
 
@@ -85,6 +102,7 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
             self._reconfigure_data = {
                 "name": user_input["name"],
                 "actors": definition.actors,
+                "actor_colors": definition.actor_colors,
                 "parameters": definition.parameters,
                 "tasks": definition.tasks,
             }
@@ -122,6 +140,7 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
             self._reconfigure_data = {
                 "name": entry.data["name"],
                 "actors": current_definition.actors,
+                "actor_colors": current_definition.actor_colors,
                 "parameters": current_definition.parameters,
                 "tasks": current_definition.tasks,
             }
@@ -129,12 +148,49 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             self._reconfigure_data["actors"] = user_input["actors"]
 
-            return await self.async_step_parameters()
+            return await self.async_step_actor_colors()
 
         return self.async_show_form(
             step_id="reconfigure",
             data_schema=build_actors_schema(
                 self._reconfigure_data["actors"]
+            ),
+        )
+
+    async def async_step_actor_colors(
+        self,
+        user_input: dict[str, Any] | None = None,
+    ) -> ConfigFlowResult:
+        """Configure actor colors."""
+
+        actors = self._reconfigure_data["actors"]
+        actor_colors = self._reconfigure_data["actor_colors"]
+
+        if user_input is not None:
+            self._reconfigure_data["actor_colors"] = {
+                actor: "#{:02X}{:02X}{:02X}".format(
+                    *user_input[actor]
+                )
+                for actor in actors
+            }
+
+            return await self.async_step_parameters()
+
+        return self.async_show_form(
+            step_id="actor_colors",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        actor,
+                        default=hex_to_rgb(
+                            actor_colors.get(
+                                actor,
+                                "#808080",
+                            )
+                        ),
+                    ): ColorRGBSelector()
+                    for actor in actors
+                }
             ),
         )
 
@@ -160,7 +216,7 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
 
                 # Remove empty values just in case.
                 values = [
-                    value
+                    value.strip()
                     for value in values
                     if value
                 ]
@@ -341,6 +397,7 @@ class WeeklyHouseholdPlannerConfigFlow(ConfigFlow, domain=DOMAIN):
 
         definition = PlannerDefinition(
             actors=self._reconfigure_data["actors"],
+            actor_colors=self._reconfigure_data["actor_colors"],
             parameters=self._reconfigure_data["parameters"],
             tasks=self._reconfigure_data["tasks"],
         )
