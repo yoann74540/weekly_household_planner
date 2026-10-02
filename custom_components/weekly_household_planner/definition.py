@@ -99,6 +99,8 @@ class PlannerDefinition:
 
     actors: list[str] = field(default_factory=list)
 
+    actor_colors: dict[str, str] = field(default_factory=dict)
+
     parameters: dict[str, ParameterDefinition] = field(
         default_factory=dict
     )
@@ -111,7 +113,7 @@ class PlannerDefinition:
         """Convert the complete definition to a dictionary."""
         return {
             "actors": self.actors,
-
+            "actor_colors": self.actor_colors,
             "parameters": {
                 name: parameter.to_dict()
                 for name, parameter in self.parameters.items()
@@ -128,7 +130,7 @@ class PlannerDefinition:
         """Create a planner definition from a dictionary."""
         return cls(
             actors=data.get("actors", []),
-
+            actor_colors=data.get("actor_colors", {}),
             parameters={
                 name: ParameterDefinition.from_dict(parameter)
                 for name, parameter in data.get(

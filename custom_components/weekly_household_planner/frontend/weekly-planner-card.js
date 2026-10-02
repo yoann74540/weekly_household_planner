@@ -66,10 +66,14 @@ class WeeklyPlannerCard extends HTMLElement {
         this._render();
 
         try {
-            const response =
-                await getSchedule(this._hass);
+            const [scheduleResponse, definitionResponse] =
+                await Promise.all([
+                    getSchedule(this._hass),
+                    getDefinition(this._hass),
+                ]);
 
-            this._schedule = response.schedule;
+            this._schedule = scheduleResponse.schedule;
+            this._definition = definitionResponse.definition;
         } catch (error) {
             console.error(
                 "Unable to load Weekly Household Planner schedule",
@@ -278,7 +282,8 @@ class WeeklyPlannerCard extends HTMLElement {
 
         const content = renderWeek(
             this._schedule,
-            this._expandedDay
+            this._expandedDay,
+            this._definition?.actor_colors ?? {}
         );
 
         this.innerHTML = `

@@ -115,17 +115,57 @@ export const WEEKLY_PLANNER_STYLES = `
     }
 
     .tasks {
-        padding: 0 16px 12px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        padding: 4px 16px 12px 28px;
     }
 
     .task {
+        overflow: hidden;
+
+        border:
+            1px solid color-mix(
+                in srgb,
+                var(--actor-color) 30%,
+                var(--divider-color)
+            );
+
+        border-left:
+            5px solid var(--actor-color);
+
+        border-radius: 9px;
+
+        background:
+            var(--card-background-color);
+    }
+
+    .task-actor {
+        padding: 6px 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) 14%,
+                transparent
+            );
+
+        color:
+            var(--actor-color);
+
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .task-content {
         display: flex;
         align-items: center;
 
-        padding: 10px 0;
+        min-height: 52px;
 
-        border-top:
-            1px solid var(--divider-color);
+        padding: 7px 8px 7px 12px;
     }
 
     .task-info {
@@ -157,6 +197,7 @@ export const WEEKLY_PLANNER_STYLES = `
 
     .task-actions {
         display: flex;
+        gap: 6px;
         margin-left: 8px;
     }
 
@@ -170,20 +211,29 @@ export const WEEKLY_PLANNER_STYLES = `
 
         padding: 0;
 
-        border: 0;
+        border:
+            1px solid var(--divider-color);
         border-radius: 50%;
 
-        background: transparent;
+        background:
+            var(--card-background-color);
 
         color:
             var(--secondary-text-color);
 
         cursor: pointer;
+
+        transition:
+            background-color 120ms ease,
+            border-color 120ms ease;
     }
 
     .icon-button:hover {
         background:
             var(--secondary-background-color);
+
+        border-color:
+            var(--secondary-text-color);
     }
 
     .icon-button ha-icon {

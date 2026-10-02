@@ -11,7 +11,8 @@ const DAYS = [
 
 export function renderWeek(
     schedule,
-    expandedDay
+    expandedDay,
+    actorColors = {}
 ) {
     return DAYS
         .map(([day, label]) => {
@@ -25,7 +26,8 @@ export function renderWeek(
                 day,
                 label,
                 tasks,
-                expanded
+                expanded,
+                actorColors
             );
         })
         .join("");
@@ -36,7 +38,8 @@ function renderDay(
     day,
     label,
     tasks,
-    expanded
+    expanded,
+    actorColors
 ) {
     const count = tasks.length;
 
@@ -75,7 +78,8 @@ function renderDay(
             ? renderTasks(
                 day,
                 label,
-                tasks
+                tasks,
+                actorColors
             )
             : ""
         }
@@ -87,59 +91,72 @@ function renderDay(
 function renderTasks(
     day,
     label,
-    tasks
+    tasks,
+    actorColors
 ) {
     const taskList = tasks
         .map(
-            (task) => `
-                <div class="task">
-                    <div class="task-info">
-                        <div class="task-name">
-                            ${task.task}
+            (task) => {
+                const actorColor =
+                    actorColors?.[task.who] ?? "var(--primary-color)";
+                return `
+                    <div
+                        class="task"
+                        style="--actor-color: ${actorColor};"
+                    >
+                        <div class="task-actor">
+                            ${task.who}
                         </div>
 
-                        <div class="task-details">
-                            ${taskDetails(task)}
+                        <div class="task-content">
+                            <div class="task-info">
+                                <div class="task-name">
+                                    ${task.task}
+                                </div>
+
+                                <div class="task-details">
+                                    ${taskDetails(task)}
+                                </div>
+                            </div>
+
+                            <div class="task-actions">
+                                <button
+                                    class="icon-button"
+                                    data-action="edit"
+                                    data-task-id="${task.id}"
+                                    title="Modifier"
+                                >
+                                    <ha-icon
+                                        icon="mdi:pencil"
+                                    ></ha-icon>
+                                </button>
+
+                                <button
+                                    class="icon-button"
+                                    data-action="duplicate"
+                                    data-task-id="${task.id}"
+                                    title="Dupliquer"
+                                >
+                                    <ha-icon
+                                        icon="mdi:content-copy"
+                                    ></ha-icon>
+                                </button>
+
+                                <button
+                                    class="icon-button"
+                                    data-action="delete"
+                                    data-task-id="${task.id}"
+                                    title="Supprimer"
+                                >
+                                    <ha-icon
+                                        icon="mdi:delete-outline"
+                                    ></ha-icon>
+                                </button>
+                            </div>
                         </div>
                     </div>
-
-                    <div class="task-actions">
-                        <button
-                            class="icon-button"
-                            data-action="edit"
-                            data-task-id="${task.id}"
-                            title="Modifier"
-                        >
-                            <ha-icon
-                                icon="mdi:pencil"
-                            ></ha-icon>
-                        </button>
-
-                        <button
-                            class="icon-button"
-                            data-action="duplicate"
-                            data-task-id="${task.id}"
-                            title="Dupliquer"
-                        >
-                            <ha-icon
-                                icon="mdi:content-copy"
-                            ></ha-icon>
-                        </button>
-
-                        <button
-                            class="icon-button"
-                            data-action="delete"
-                            data-task-id="${task.id}"
-                            title="Supprimer"
-                        >
-                            <ha-icon
-                                icon="mdi:delete-outline"
-                            ></ha-icon>
-                        </button>
-                    </div>
-                </div>
-            `
-        )
+                `;
+            })
         .join("");
 
     return `
@@ -164,10 +181,6 @@ function renderTasks(
 
 export function taskDetails(task) {
     const details = [];
-
-    if (task.who) {
-        details.push(task.who);
-    }
 
     for (
         const [, value]

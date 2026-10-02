@@ -16,6 +16,10 @@
                     "actors": "Acteurs disponibles"
                 }
             },
+            "actor_colors": {
+                "title": "Couleurs des acteurs",
+                "description": "Choisissez une couleur pour chaque acteur. Cette couleur sera utilisée pour identifier visuellement ses tâches dans le planning."
+            },
             "parameters": {
                 "title": "Paramètres",
                 "description": "Définissez les paramètres utilisables par les tâches et leurs valeurs.",
