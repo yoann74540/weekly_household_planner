@@ -527,3 +527,75 @@ export const WEEKLY_PLANNER_STYLES = `
         cursor: default;
     }
 `;
+
+export const WEEKLY_PLANNER_TODAY_STYLES = `
+    .today-card {
+        padding: 16px;
+    }
+
+
+    .today-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 14px;
+    }
+
+
+    .today-title {
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+
+    .today-date {
+        margin-top: 2px;
+
+        color: var(--secondary-text-color);
+
+        font-size: 14px;
+    }
+
+
+    .today-count {
+        padding: 6px 10px;
+
+        border-radius: 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--primary-color) 12%,
+                transparent
+            );
+
+        color: var(--primary-color);
+
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+
+    .today-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        gap: 10px;
+
+        min-height: 130px;
+
+        color: var(--secondary-text-color);
+
+        text-align: center;
+        font-size: 15px;
+    }
+
+
+    .today-empty ha-icon {
+        --mdc-icon-size: 38px;
+    }
+
+`;
