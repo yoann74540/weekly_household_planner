@@ -105,7 +105,9 @@ function renderTasks(
                         style="--actor-color: ${actorColor};"
                     >
                         <div class="task-actor">
-                            ${task.who}
+                            <span class="task-actor-label">
+                                ${task.who}
+                            </span>
                         </div>
 
                         <div class="task-content">
