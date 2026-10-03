@@ -280,6 +280,9 @@ class WeeklyPlannerCard extends HTMLElement {
             return;
         }
 
+        const darkMode =
+            this._hass.themes?.darkMode ?? false;
+
         const content = renderWeek(
             this._schedule,
             this._expandedDay,
@@ -333,7 +336,7 @@ class WeeklyPlannerCard extends HTMLElement {
                                             </div>
                                         `
                     : `
-                                            <div class="days">
+                                            <div class="days ${darkMode ? "dark" : "light"}">
                                                 ${content}
                                             </div>
                                         `

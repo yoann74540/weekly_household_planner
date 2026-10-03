@@ -117,7 +117,7 @@ export const WEEKLY_PLANNER_STYLES = `
     .tasks {
         display: flex;
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
 
         padding: 4px 16px 12px 28px;
     }
@@ -151,21 +151,49 @@ export const WEEKLY_PLANNER_STYLES = `
                 transparent
             );
 
-        color:
-            var(--actor-color);
+        color: var(--actor-color);
 
         font-size: 12px;
         font-weight: 700;
         text-transform: uppercase;
     }
 
+    .task-actor-label {
+        display: inline-block;
+    }
+
+    /* Thème clair */
+    .days.light .task-actor-label {
+        padding: 3px 8px;
+
+        border-radius: 5px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) 55%,
+                white
+            );
+
+        color: #111;
+    }
+
+    /* Thème sombre */
+    .days.dark .task-actor-label {
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+
+        color: var(--actor-color);
+    }
+
     .task-content {
         display: flex;
         align-items: center;
 
-        min-height: 52px;
+        min-height: 46px;
 
-        padding: 7px 8px 7px 12px;
+        padding: 5px 8px 5px 12px;
     }
 
     .task-info {
@@ -197,7 +225,7 @@ export const WEEKLY_PLANNER_STYLES = `
 
     .task-actions {
         display: flex;
-        gap: 6px;
+        gap: 5px;
         margin-left: 8px;
     }
 
@@ -206,8 +234,8 @@ export const WEEKLY_PLANNER_STYLES = `
         align-items: center;
         justify-content: center;
 
-        width: 38px;
-        height: 38px;
+        width: 34px;
+        height: 34px;
 
         padding: 0;
 
@@ -237,7 +265,7 @@ export const WEEKLY_PLANNER_STYLES = `
     }
 
     .icon-button ha-icon {
-        --mdc-icon-size: 20px;
+        --mdc-icon-size: 18px;
     }
 
     .day-add {
@@ -498,4 +526,76 @@ export const WEEKLY_PLANNER_STYLES = `
 
         cursor: default;
     }
+`;
+
+export const WEEKLY_PLANNER_TODAY_STYLES = `
+    .today-card {
+        padding: 16px;
+    }
+
+
+    .today-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 14px;
+    }
+
+
+    .today-title {
+        font-size: 22px;
+        font-weight: 600;
+    }
+
+
+    .today-date {
+        margin-top: 2px;
+
+        color: var(--secondary-text-color);
+
+        font-size: 14px;
+    }
+
+
+    .today-count {
+        padding: 6px 10px;
+
+        border-radius: 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--primary-color) 12%,
+                transparent
+            );
+
+        color: var(--primary-color);
+
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+
+    .today-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        gap: 10px;
+
+        min-height: 130px;
+
+        color: var(--secondary-text-color);
+
+        text-align: center;
+        font-size: 15px;
+    }
+
+
+    .today-empty ha-icon {
+        --mdc-icon-size: 38px;
+    }
+
 `;

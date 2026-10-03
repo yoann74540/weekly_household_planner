@@ -21,6 +21,7 @@ The planner is generic: tasks can be performed by people, robots, or any other a
 - 📋 Duplicate tasks to other days
 - 🗑 Delete scheduled tasks
 - 🔧 Home Assistant actions/services for accessing and modifying the planner
+- 📆 Read-only Today card for displaying the current day's tasks
 
 ## Example
 
@@ -141,6 +142,13 @@ It allows you to:
 - edit a task;
 - duplicate a task to other days;
 - delete a task.
+
+## Today Card
+
+Weekly Household Planner also provides a compact read-only Lovelace card designed to display only the tasks scheduled for the current day.
+
+It is especially useful for wall-mounted dashboards and small displays such as the NSPanel Pro.
+
 
 ## Calendar
 
