@@ -30,6 +30,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._schedule = null;
         this._definition = null;
         this._loading = false;
+        this._selectedTask = null;
     }
 
 
@@ -139,7 +140,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
     }
 
 
-    _renderTask(task) {
+    _renderTask(task, index) {
         const actorColor =
             this._definition
                 ?.actor_colors
@@ -151,7 +152,8 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
         return `
             <div
-                class="task"
+                class="task today-task-clickable"
+                data-task-index="${index}"
                 style="--actor-color: ${actorColor};"
             >
                 <div class="task-actor">
@@ -175,6 +177,109 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                 : ""
             }
                     </div>
+                </div>
+            </div>
+        `;
+    }
+
+    _renderTaskDetails(task, darkMode) {
+        const actorColor =
+            this._definition
+                ?.actor_colors
+            ?.[task.who]
+            ?? "var(--primary-color)";
+
+        const parameters =
+            task.parameters ?? {};
+
+        const parameterRows =
+            Object.entries(parameters)
+                .filter(
+                    ([, value]) =>
+                        value !== null &&
+                        value !== undefined &&
+                        value !== ""
+                )
+                .map(([key, value]) => {
+
+                    const values =
+                        Array.isArray(value)
+                            ? value
+                            : [value];
+
+                    const chips =
+                        values
+                            .map(
+                                (item) => `
+                                    <span class="today-detail-chip">
+                                        ${item}
+                                    </span>
+                                `
+                            )
+                            .join("");
+
+                    return `
+                        <div class="today-detail-row">
+
+                            <div class="today-detail-key">
+                                ${key}
+                            </div>
+
+                            <div class="today-detail-value">
+                                ${chips}
+                            </div>
+
+                        </div>
+                    `;
+                })
+                .join("");
+
+        return `
+            <div
+                class="today-detail-overlay ${darkMode ? "dark" : "light"}"
+                data-action="close-detail"
+            >
+                <div
+                    class="today-detail-dialog"
+                    style="--actor-color: ${actorColor};"
+                >
+                    <div class="today-detail-header">
+
+                        <div>
+                            <div class="today-detail-actor">
+                                ${task.who}
+                            </div>
+
+                            <div class="today-detail-title">
+                                ${task.task}
+                            </div>
+                        </div>
+
+                        <button
+                            class="today-detail-close"
+                            data-action="close-detail"
+                            aria-label="Fermer"
+                        >
+                            <ha-icon
+                                icon="mdi:close"
+                            ></ha-icon>
+                        </button>
+
+                    </div>
+
+                    ${parameterRows
+                ? `
+                            <div class="today-detail-parameters">
+                                ${parameterRows}
+                            </div>
+                        `
+                : `
+                            <div class="today-detail-empty">
+                                Aucun paramètre
+                            </div>
+                        `
+            }
+
                 </div>
             </div>
         `;
@@ -236,8 +341,8 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                                     <div class="tasks">
                                         ${tasks
                         .map(
-                            (task) =>
-                                this._renderTask(task)
+                            (task, index) =>
+                                this._renderTask(task, index)
                         )
                         .join("")
                     }
@@ -257,9 +362,69 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                             `
             }
 
+            ${this._selectedTask
+                ? this._renderTaskDetails(
+                    this._selectedTask,
+                    darkMode
+                )
+                : ""
+            }
+
                 </div>
             </ha-card>
         `;
+        this._attachListeners();
+    }
+
+    _attachListeners() {
+        this.querySelectorAll(
+            ".today-task-clickable"
+        ).forEach((element) => {
+
+            element.addEventListener(
+                "click",
+                () => {
+                    const index =
+                        Number(
+                            element.dataset.taskIndex
+                        );
+
+                    this._selectedTask =
+                        this._getTodayTasks()[index]
+                        ?? null;
+
+                    this._render();
+                }
+            );
+        });
+
+
+        this.querySelector(
+            ".today-detail-close"
+        )?.addEventListener(
+            "click",
+            () => {
+                this._selectedTask = null;
+                this._render();
+            }
+        );
+
+
+        this.querySelector(
+            ".today-detail-overlay"
+        )?.addEventListener(
+            "click",
+            (event) => {
+
+                if (
+                    event.target ===
+                    event.currentTarget
+                ) {
+                    this._selectedTask = null;
+                    this._render();
+                }
+            }
+        );
     }
 
 
