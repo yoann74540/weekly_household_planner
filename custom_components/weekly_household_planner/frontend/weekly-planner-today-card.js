@@ -1,7 +1,5 @@
-import {
-    WEEKLY_PLANNER_COMMON_STYLES,
-    WEEKLY_PLANNER_TODAY_STYLES,
-} from "./weekly-planner-styles.js";
+import { WEEKLY_PLANNER_COMMON_STYLES } from "./styles/weekly-planner-common-styles.js";
+import { WEEKLY_PLANNER_TODAY_STYLES } from "./styles/weekly-planner-today-styles.js";
 
 import {
     getDefinition,
