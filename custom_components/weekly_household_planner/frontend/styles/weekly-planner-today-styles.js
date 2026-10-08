@@ -1,4 +1,4 @@
-export const WEEKLY_PLANNER_STYLES = `
+export const WEEKLY_PLANNER_WEEK_STYLES = `
     .card-content {
         padding: 0;
     }
@@ -120,107 +120,6 @@ export const WEEKLY_PLANNER_STYLES = `
         gap: 8px;
 
         padding: 4px 16px 12px 28px;
-    }
-
-    .task {
-        overflow: hidden;
-
-        border:
-            1px solid color-mix(
-                in srgb,
-                var(--actor-color) 30%,
-                var(--divider-color)
-            );
-
-        border-left:
-            5px solid var(--actor-color);
-
-        border-radius: 9px;
-
-        background:
-            var(--card-background-color);
-    }
-
-    .task-actor {
-        padding: 6px 12px;
-
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 14%,
-                transparent
-            );
-
-        color: var(--actor-color);
-
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .task-actor-label {
-        display: inline-block;
-    }
-
-    /* Thème clair */
-    .days.light .task-actor-label {
-        padding: 3px 8px;
-
-        border-radius: 5px;
-
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 55%,
-                white
-            );
-
-        color: #111;
-    }
-
-    /* Thème sombre */
-    .days.dark .task-actor-label {
-        padding: 0;
-        border-radius: 0;
-        background: transparent;
-
-        color: var(--actor-color);
-    }
-
-    .task-content {
-        display: flex;
-        align-items: center;
-
-        min-height: 46px;
-
-        padding: 5px 8px 5px 12px;
-    }
-
-    .task-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .task-name {
-        font-size: 15px;
-        font-weight: 500;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .task-details {
-        margin-top: 3px;
-
-        color:
-            var(--secondary-text-color);
-
-        font-size: 13px;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .task-actions {
@@ -529,23 +428,27 @@ export const WEEKLY_PLANNER_STYLES = `
 `;
 
 export const WEEKLY_PLANNER_TODAY_STYLES = `
+
     .today-card {
-        padding: 16px;
+        padding: 10px;
     }
 
+
+    /* ---------- Header ---------- */
 
     .today-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
 
-        margin-bottom: 14px;
+        margin-bottom: 8px;
     }
 
 
     .today-title {
-        font-size: 22px;
+        font-size: 20px;
         font-weight: 600;
+        line-height: 1.1;
     }
 
 
@@ -554,12 +457,13 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
         color: var(--secondary-text-color);
 
-        font-size: 14px;
+        font-size: 12px;
+        line-height: 1.2;
     }
 
 
     .today-count {
-        padding: 6px 10px;
+        padding: 5px 9px;
 
         border-radius: 12px;
 
@@ -572,10 +476,93 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
         color: var(--primary-color);
 
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
+
+        white-space: nowrap;
     }
 
+
+    /* ---------- Tasks grid ---------- */
+
+    .today-card .days {
+        border-top: 0;
+    }
+
+
+    .today-card .tasks {
+        display: grid;
+
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+
+        gap: 6px;
+
+        padding: 0;
+    }
+
+
+    /*
+    * Small-screen specific adjustments.
+    * Colors and general styles are inherited
+    * from WEEKLY_PLANNER_COMMON_STYLES.
+    */
+
+    .today-card .task {
+        min-width: 0;
+    }
+
+
+    .today-card .task-actor {
+        padding: 3px 7px;
+
+        font-size: 10px;
+        line-height: 1.2;
+    }
+
+
+    .today-card .task-actor-label {
+        padding: 2px 6px;
+    }
+
+
+    .today-card .task-content {
+        min-height: 0;
+
+        padding: 5px 7px;
+    }
+
+
+    .today-card .task-info {
+        min-width: 0;
+    }
+
+
+    .today-card .task-name {
+        overflow: hidden;
+
+        font-size: 13px;
+        line-height: 1.2;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    .today-card .task-details {
+        overflow: hidden;
+
+        margin-top: 2px;
+
+        font-size: 11px;
+        line-height: 1.2;
+
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+
+    /* ---------- Empty state ---------- */
 
     .today-empty {
         display: flex;
@@ -583,19 +570,253 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
         align-items: center;
         justify-content: center;
 
-        gap: 10px;
+        gap: 8px;
 
-        min-height: 130px;
+        min-height: 120px;
 
         color: var(--secondary-text-color);
 
         text-align: center;
-        font-size: 15px;
+        font-size: 14px;
     }
 
 
     .today-empty ha-icon {
-        --mdc-icon-size: 38px;
+        --mdc-icon-size: 34px;
     }
 
+    /* ---------- Clickable tasks ---------- */
+
+    .today-task-clickable {
+        cursor: pointer;
+
+        transition:
+            transform 100ms ease,
+            opacity 100ms ease;
+    }
+
+
+    .today-task-clickable:active {
+        transform: scale(0.98);
+
+        opacity: 0.8;
+    }
+
+
+    /* ---------- Task details ---------- */
+
+    .today-detail-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 1000;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        padding: 16px;
+
+        background: rgba(0, 0, 0, 0.45);
+    }
+
+
+    .today-detail-dialog {
+        width: min(360px, 90vw);
+        max-height: 80vh;
+
+        overflow-y: auto;
+
+        border-left:
+            6px solid var(--actor-color);
+
+        border-radius: 12px;
+
+        background:
+            var(--card-background-color);
+
+        color:
+            var(--primary-text-color);
+
+        box-shadow:
+            0 8px 30px
+            rgba(0, 0, 0, 0.25);
+    }
+
+
+    .today-detail-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+
+        gap: 12px;
+
+        padding: 12px 12px 10px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) 14%,
+                transparent
+            );
+    }
+
+    .today-detail-title {
+        font-size: 20px;
+        font-weight: 600;
+    }
+
+
+    .today-detail-close {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex: 0 0 auto;
+
+        width: 36px;
+        height: 36px;
+
+        padding: 0;
+
+        border: 0;
+        border-radius: 50%;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--primary-text-color) 8%,
+                transparent
+            );
+
+        color:
+            var(--primary-text-color);
+
+        cursor: pointer;
+    }
+
+
+    .today-detail-close ha-icon {
+        --mdc-icon-size: 21px;
+    }
+
+
+    .today-detail-parameters {
+        padding: 8px 12px 12px;
+    }
+
+
+    .today-detail-row {
+        display: grid;
+
+        grid-template-columns:
+            minmax(80px, 0.8fr)
+            minmax(0, 1.2fr);
+
+        gap: 10px;
+
+        padding: 8px 0;
+
+        border-bottom:
+            1px solid
+            var(--divider-color);
+    }
+
+
+    .today-detail-row:last-child {
+        border-bottom: 0;
+    }
+
+
+    .today-detail-key {
+        color:
+            var(--secondary-text-color);
+
+        font-size: 13px;
+    }
+
+
+    .today-detail-value {
+        display: flex;
+        flex-wrap: wrap;
+
+        gap: 5px;
+
+        min-width: 0;
+    }
+
+
+    .today-detail-empty {
+        padding: 16px;
+
+        color:
+            var(--secondary-text-color);
+
+        text-align: center;
+        font-size: 13px;
+    }
+    /* ---------- Actor label ---------- */
+
+    .today-detail-actor {
+        display: inline-block;
+
+        margin-bottom: 5px;
+        padding: 3px 8px;
+
+        border-radius: 5px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) var(--actor-label-mix),
+                var(--actor-label-base)
+            );
+
+        color: var(--actor-label-text);
+
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .today-detail-overlay.dark .today-detail-actor {
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+
+    /* ---------- Parameter chips ---------- */
+
+    .today-detail-chip {
+        display: inline-flex;
+        align-items: center;
+
+        min-height: 24px;
+        padding: 2px 9px;
+
+        border:
+            1px solid
+            color-mix(
+                in srgb,
+                var(--actor-color) var(--actor-chip-border-mix),
+                transparent
+            );
+
+        border-radius: 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) var(--actor-chip-mix),
+                var(--actor-chip-base)
+            );
+
+        color: var(--actor-chip-text);
+
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
 `;
