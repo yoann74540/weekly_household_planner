@@ -145,9 +145,23 @@ It allows you to:
 
 ## Today Card
 
-Weekly Household Planner also provides a compact read-only Lovelace card designed to display only the tasks scheduled for the current day.
+Weekly Household Planner also provides a compact, read-only Lovelace card designed to display only the tasks scheduled for the current day.
 
 It is especially useful for wall-mounted dashboards and small displays such as the NSPanel Pro.
+
+The Today Card provides:
+
+- 📅 Automatic display of the current day's tasks.
+
+- 🎨 Color-coded task tiles based on the assigned actor.
+
+- 📱 A compact two-column layout optimized for small screens.
+
+- 👆 Tap a task to open a popup showing its details and parameters.
+
+- 🔒 Read-only access: tasks cannot be modified from this card.
+
+The Today Card uses the same planner configuration and schedule as the Weekly Planner Card, ensuring that both cards display consistent information.
 
 
 ## Calendar
