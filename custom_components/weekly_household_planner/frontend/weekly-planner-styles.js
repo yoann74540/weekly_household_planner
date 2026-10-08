@@ -1,4 +1,134 @@
-export const WEEKLY_PLANNER_STYLES = `
+export const WEEKLY_PLANNER_COMMON_STYLES = `
+
+    /* ---------- Light theme ---------- */
+
+    .light {
+        --actor-label-mix: 55%;
+        --actor-label-base: white;
+        --actor-label-text: #111;
+
+        --actor-chip-mix: 35%;
+        --actor-chip-base: white;
+        --actor-chip-text: #111;
+        --actor-chip-border-mix: 0%;
+    }
+
+
+    /* ---------- Dark theme ---------- */
+
+    .dark {
+        --actor-label-mix: 18%;
+        --actor-label-base: transparent;
+
+        --actor-chip-mix: 18%;
+        --actor-chip-base: transparent;
+        --actor-chip-border-mix: 35%;
+    }
+
+    .dark .task,
+    .today-detail-overlay.dark .today-detail-dialog {
+        --actor-label-text: var(--actor-color);
+        --actor-chip-text: var(--actor-color);
+    }
+
+    .task {
+        overflow: hidden;
+
+        border:
+            1px solid color-mix(
+                in srgb,
+                var(--actor-color) 30%,
+                var(--divider-color)
+            );
+
+        border-left:
+            5px solid var(--actor-color);
+
+        border-radius: 9px;
+
+        background:
+            var(--card-background-color);
+    }
+
+    .task-actor {
+        padding: 6px 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) 14%,
+                transparent
+            );
+
+        color: var(--actor-color);
+
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .task-actor-label {
+        display: inline-block;
+
+        padding: 3px 8px;
+        border-radius: 5px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) var(--actor-label-mix),
+                var(--actor-label-base)
+            );
+
+        color: var(--actor-label-text);
+    }
+
+    .days.dark .task-actor-label {
+        padding: 0;
+        border-radius: 0;
+        background: transparent;
+    }
+
+    .task-content {
+        display: flex;
+        align-items: center;
+
+        min-height: 46px;
+
+        padding: 5px 8px 5px 12px;
+    }
+
+    .task-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .task-name {
+        font-size: 15px;
+        font-weight: 500;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .task-details {
+        margin-top: 3px;
+
+        color:
+            var(--secondary-text-color);
+
+        font-size: 13px;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+`;
+
+
+
+export const WEEKLY_PLANNER_WEEK_STYLES = `
     .card-content {
         padding: 0;
     }
@@ -120,107 +250,6 @@ export const WEEKLY_PLANNER_STYLES = `
         gap: 8px;
 
         padding: 4px 16px 12px 28px;
-    }
-
-    .task {
-        overflow: hidden;
-
-        border:
-            1px solid color-mix(
-                in srgb,
-                var(--actor-color) 30%,
-                var(--divider-color)
-            );
-
-        border-left:
-            5px solid var(--actor-color);
-
-        border-radius: 9px;
-
-        background:
-            var(--card-background-color);
-    }
-
-    .task-actor {
-        padding: 6px 12px;
-
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 14%,
-                transparent
-            );
-
-        color: var(--actor-color);
-
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .task-actor-label {
-        display: inline-block;
-    }
-
-    /* Thème clair */
-    .days.light .task-actor-label {
-        padding: 3px 8px;
-
-        border-radius: 5px;
-
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 55%,
-                white
-            );
-
-        color: #111;
-    }
-
-    /* Thème sombre */
-    .days.dark .task-actor-label {
-        padding: 0;
-        border-radius: 0;
-        background: transparent;
-
-        color: var(--actor-color);
-    }
-
-    .task-content {
-        display: flex;
-        align-items: center;
-
-        min-height: 46px;
-
-        padding: 5px 8px 5px 12px;
-    }
-
-    .task-info {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .task-name {
-        font-size: 15px;
-        font-weight: 500;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .task-details {
-        margin-top: 3px;
-
-        color:
-            var(--secondary-text-color);
-
-        font-size: 13px;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     .task-actions {
@@ -604,10 +633,10 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
 
     /*
-     * Ajustements spécifiques au petit écran.
-     * Les couleurs et règles générales restent
-     * celles de WEEKLY_PLANNER_STYLES.
-     */
+    * Small-screen specific adjustments.
+    * Colors and general styles are inherited
+    * from WEEKLY_PLANNER_COMMON_STYLES.
+    */
 
     .today-card .task {
         min-width: 0;
@@ -624,15 +653,6 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
     .today-card .task-actor-label {
         padding: 2px 6px;
-    }
-
-
-    /*
-     * En thème sombre le style commun retire
-     * déjà le fond du label acteur.
-     */
-    .today-card .days.dark .task-actor-label {
-        padding: 0;
     }
 
 
@@ -772,19 +792,6 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
             );
     }
 
-
-    .today-detail-actor {
-        display: inline-block;
-
-        margin-bottom: 5px;
-
-        font-size: 11px;
-        font-weight: 700;
-
-        text-transform: uppercase;
-    }
-
-
     .today-detail-title {
         font-size: 20px;
         font-weight: 600;
@@ -879,11 +886,12 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
         text-align: center;
         font-size: 13px;
     }
+    /* ---------- Actor label ---------- */
 
-    /* ---------- Thème clair ---------- */
-
-    .today-detail-overlay.light
     .today-detail-actor {
+        display: inline-block;
+
+        margin-bottom: 5px;
         padding: 3px 8px;
 
         border-radius: 5px;
@@ -891,87 +899,54 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
         background:
             color-mix(
                 in srgb,
-                var(--actor-color) 55%,
-                white
+                var(--actor-color) var(--actor-label-mix),
+                var(--actor-label-base)
             );
 
-        color: #111;
+        color: var(--actor-label-text);
+
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
     }
 
-
-    /* ---------- Thème sombre ---------- */
-
-    .today-detail-overlay.dark
-    .today-detail-actor {
+    .today-detail-overlay.dark .today-detail-actor {
         padding: 0;
-
         border-radius: 0;
-
         background: transparent;
-
-        color: var(--actor-color);
     }
 
-    .today-detail-dialog {
-        border-left:
-            6px solid var(--actor-color);
-    }
 
-    .today-detail-header {
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 14%,
-                transparent
-            );
-    }
+    /* ---------- Parameter chips ---------- */
 
     .today-detail-chip {
         display: inline-flex;
         align-items: center;
 
         min-height: 24px;
-
         padding: 2px 9px;
-
-        border-radius: 12px;
-
-        font-size: 12px;
-        font-weight: 600;
-
-        white-space: nowrap;
-    }
-
-    .today-detail-overlay.light
-    .today-detail-chip {
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 35%,
-                white
-            );
-
-        color: #111;
-    }
-
-    .today-detail-overlay.dark
-    .today-detail-chip {
-        background:
-            color-mix(
-                in srgb,
-                var(--actor-color) 18%,
-                transparent
-            );
-
-        color:
-            var(--actor-color);
 
         border:
             1px solid
             color-mix(
                 in srgb,
-                var(--actor-color) 35%,
+                var(--actor-color) var(--actor-chip-border-mix),
                 transparent
             );
+
+        border-radius: 12px;
+
+        background:
+            color-mix(
+                in srgb,
+                var(--actor-color) var(--actor-chip-mix),
+                var(--actor-chip-base)
+            );
+
+        color: var(--actor-chip-text);
+
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
     }
 `;

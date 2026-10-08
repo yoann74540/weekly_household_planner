@@ -1,5 +1,5 @@
 import {
-    WEEKLY_PLANNER_STYLES,
+    WEEKLY_PLANNER_COMMON_STYLES,
     WEEKLY_PLANNER_TODAY_STYLES,
 } from "./weekly-planner-styles.js";
 
@@ -303,7 +303,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this.innerHTML = `
             <ha-card>
                 <style>
-                    ${WEEKLY_PLANNER_STYLES}
+                    ${WEEKLY_PLANNER_COMMON_STYLES}
                     ${WEEKLY_PLANNER_TODAY_STYLES}
                 </style>
 
