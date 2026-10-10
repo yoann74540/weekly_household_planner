@@ -622,6 +622,11 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
     .today-task-clickable {
         cursor: pointer;
 
+        touch-action: pan-y;
+        user-select: none;
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+
         transition:
             transform 100ms ease,
             opacity 100ms ease;

@@ -506,38 +506,75 @@ class WeeklyPlannerTodayCard extends HTMLElement {
     }
 
     _attachListeners() {
-        this.querySelectorAll(
-            ".today-task-clickable"
-        ).forEach((element) => {
+        this.querySelectorAll(".today-task-clickable").forEach((element) => {
+            let longPressTimer = null;
+            let longPressTriggered = false;
+            let startX = 0;
+            let startY = 0;
 
-            element.addEventListener(
-                "click",
-                (event) => {
-                    const index = Number(element.dataset.taskIndex);
-                    const task = this._getTodayTasks()[index];
+            const cancelLongPress = () => {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+            };
 
-                    if (!task) {
-                        return;
-                    }
+            element.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0) return;
 
-                    const status = event.target.closest(".today-task-status");
+                const index = Number(element.dataset.taskIndex);
+                const task = this._getTodayTasks()[index];
 
-                    if (status) {
-                        event.stopPropagation();
-                        this._toggleTaskCompletion(task);
-                        return;
-                    }
+                if (!task) return;
 
-                    this._selectedTask = task;
-                    this._render();
+                longPressTriggered = false;
+                startX = event.clientX;
+                startY = event.clientY;
+
+                cancelLongPress();
+
+                longPressTimer = setTimeout(() => {
+                    longPressTimer = null;
+                    longPressTriggered = true;
+
+                    this._toggleTaskCompletion(task);
+                }, 700);
+            });
+
+            element.addEventListener("pointermove", (event) => {
+                if (
+                    Math.abs(event.clientX - startX) > 10 ||
+                    Math.abs(event.clientY - startY) > 10
+                ) {
+                    cancelLongPress();
                 }
-            );
+            });
+
+            element.addEventListener("pointerup", cancelLongPress);
+            element.addEventListener("pointercancel", cancelLongPress);
+            element.addEventListener("pointerleave", cancelLongPress);
+
+            element.addEventListener("click", (event) => {
+                if (longPressTriggered) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    longPressTriggered = false;
+                    return;
+                }
+
+                const index = Number(element.dataset.taskIndex);
+                const task = this._getTodayTasks()[index];
+
+                if (!task) return;
+
+                this._selectedTask = task;
+                this._render();
+            });
+
+            element.addEventListener("contextmenu", (event) => {
+                event.preventDefault();
+            });
         });
 
-
-        this.querySelector(
-            ".today-detail-close"
-        )?.addEventListener(
+        this.querySelector(".today-detail-close")?.addEventListener(
             "click",
             () => {
                 this._selectedTask = null;
@@ -545,17 +582,10 @@ class WeeklyPlannerTodayCard extends HTMLElement {
             }
         );
 
-
-        this.querySelector(
-            ".today-detail-overlay"
-        )?.addEventListener(
+        this.querySelector(".today-detail-overlay")?.addEventListener(
             "click",
             (event) => {
-
-                if (
-                    event.target ===
-                    event.currentTarget
-                ) {
+                if (event.target === event.currentTarget) {
                     this._selectedTask = null;
                     this._render();
                 }
