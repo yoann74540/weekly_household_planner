@@ -4,6 +4,7 @@ import { WEEKLY_PLANNER_TODAY_STYLES } from "./styles/weekly-planner-today-style
 import {
     getDefinition,
     getSchedule,
+    getCompletions,
 } from "./weekly-planner-api.js";
 
 
@@ -27,8 +28,13 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._config = {};
         this._schedule = null;
         this._definition = null;
+        this._completions = {};
         this._loading = false;
         this._selectedTask = null;
+        this._unsubscribeCompletion = null;
+
+        this._currentDate = this._getTodayDate();
+        this._dayTimer = null;
     }
 
 
@@ -42,15 +48,39 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
         this._hass = hass;
 
+        if (this.isConnected) {
+            this._subscribeCompletionEvents();
+        }
+
         if (firstLoad) {
             this._loadData();
+        } else {
+            this._checkDayChange();
         }
     }
 
 
     connectedCallback() {
+        this._subscribeCompletionEvents();
+
+        this._dayTimer = setInterval(() => {
+            this._checkDayChange();
+        }, 60_000);
+
         if (this._hass && !this._schedule) {
             this._loadData();
+        }
+    }
+
+    disconnectedCallback() {
+        if (this._dayTimer) {
+            clearInterval(this._dayTimer);
+            this._dayTimer = null;
+        }
+
+        if (this._unsubscribeCompletion) {
+            this._unsubscribeCompletion();
+            this._unsubscribeCompletion = null;
         }
     }
 
@@ -64,10 +94,11 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._render();
 
         try {
-            const [scheduleResponse, definitionResponse] =
+            const [scheduleResponse, definitionResponse, completionsResponse] =
                 await Promise.all([
                     getSchedule(this._hass),
                     getDefinition(this._hass),
+                    getCompletions(this._hass),
                 ]);
 
             this._schedule =
@@ -75,6 +106,9 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
             this._definition =
                 definitionResponse.definition ?? {};
+
+            this._completions =
+                completionsResponse.completions ?? {};
 
         } catch (error) {
             console.error(
@@ -84,16 +118,82 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
             this._schedule = {};
             this._definition = {};
-
+            this._completions = {};
         } finally {
             this._loading = false;
             this._render();
         }
     }
 
+    async _subscribeCompletionEvents() {
+        if (!this._hass || this._unsubscribeCompletion) {
+            return;
+        }
+
+        this._unsubscribeCompletion =
+            await this._hass.connection.subscribeEvents(
+                (event) => {
+                    const { task_id, completed, date } = event.data;
+
+                    if (date !== this._currentDate) {
+                        return;
+                    }
+
+                    this._completions[task_id] = completed;
+
+                    this._updateTaskStatus(task_id, completed);
+                },
+                "weekly_household_planner_task_completion_changed"
+            );
+    }
+
+    async _toggleTaskCompletion(task) {
+        const completed = !(this._completions[task.id] ?? false);
+
+        try {
+            await this._hass.callService(
+                "weekly_household_planner",
+                "complete_task",
+                {
+                    task_id: task.id,
+                    completed,
+                }
+            );
+        } catch (error) {
+            console.error(
+                "Unable to update task completion",
+                error
+            );
+        }
+    }
+
+    _checkDayChange() {
+        const today = this._getTodayDate();
+
+        if (today === this._currentDate) {
+            return;
+        }
+
+        this._currentDate = today;
+        this._completions = {};
+        this._selectedTask = null;
+
+        this._loadData();
+    }
+
 
     _getToday() {
         return DAYS[new Date().getDay()];
+    }
+
+    _getTodayDate() {
+        const now = new Date();
+
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, "0");
+        const day = String(now.getDate()).padStart(2, "0");
+
+        return `${year}-${month}-${day}`;
     }
 
 
@@ -148,15 +248,25 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         const details =
             this._taskDetails(task);
 
+        const completed =
+            this._completions[task.id] ?? false;
+
         return `
             <div
                 class="task today-task-clickable"
                 data-task-index="${index}"
+                data-task-id="${task.id}"
                 style="--actor-color: ${actorColor};"
             >
+
                 <div class="task-actor">
                     <span class="task-actor-label">
                         ${task.who}
+                    </span>
+
+                    <span class="today-task-status ${completed ? "completed" : ""}"
+                        data-completion-toggle="true">
+                        ${completed ? `<ha-icon icon="mdi:check"></ha-icon>` : ""}
                     </span>
                 </div>
 
@@ -178,6 +288,27 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                 </div>
             </div>
         `;
+    }
+
+    _updateTaskStatus(taskId, completed) {
+        const task = [...this.querySelectorAll(".today-task-clickable")]
+            .find((element) => element.dataset.taskId === taskId);
+
+        if (!task) {
+            return;
+        }
+
+        const status = task.querySelector(".today-task-status");
+
+        if (!status) {
+            return;
+        }
+
+        status.classList.toggle("completed", completed);
+
+        status.innerHTML = completed
+            ? '<ha-icon icon="mdi:check"></ha-icon>'
+            : "";
     }
 
     _renderTaskDetails(task, darkMode) {
@@ -381,16 +512,23 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
             element.addEventListener(
                 "click",
-                () => {
-                    const index =
-                        Number(
-                            element.dataset.taskIndex
-                        );
+                (event) => {
+                    const index = Number(element.dataset.taskIndex);
+                    const task = this._getTodayTasks()[index];
 
-                    this._selectedTask =
-                        this._getTodayTasks()[index]
-                        ?? null;
+                    if (!task) {
+                        return;
+                    }
 
+                    const status = event.target.closest(".today-task-status");
+
+                    if (status) {
+                        event.stopPropagation();
+                        this._toggleTaskCompletion(task);
+                        return;
+                    }
+
+                    this._selectedTask = task;
                     this._render();
                 }
             );

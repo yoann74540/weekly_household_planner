@@ -321,9 +321,11 @@ async def async_setup(
         planner = entries[0].runtime_data
         task_id = call.data["task_id"]
 
-        today = Day(dt_util.now().strftime("%A").lower())
+        today = dt_util.now()
+        day = Day(today.strftime("%A").lower())
+        date = today.date().isoformat()
 
-        tasks = planner.get_tasks(day=today)
+        tasks = planner.get_tasks(day=day)
 
         if not any(task.id == task_id for task in tasks):
             return {
@@ -335,8 +337,17 @@ async def async_setup(
 
         await completion_storage.async_set_completed(
             task_id=task_id,
-            date=dt_util.now().date().isoformat(),
+            date=date,
             completed=call.data["completed"],
+        )
+
+        hass.bus.async_fire(
+            f"{DOMAIN}_task_completion_changed",
+            {
+                "task_id": task_id,
+                "completed": call.data["completed"],
+                "date": date,
+            },
         )
 
         return {

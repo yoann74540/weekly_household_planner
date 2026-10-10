@@ -5,6 +5,8 @@ from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
+from homeassistant.util import dt as dt_util
+from datetime import date, timedelta
 
 from .models import Task
 
@@ -68,6 +70,7 @@ class TaskCompletionStorage:
         """Load completion states from storage."""
 
         self._completions = await self._store.async_load() or {}
+        await self.async_cleanup()
 
     async def async_set_completed(
         self,
@@ -76,6 +79,7 @@ class TaskCompletionStorage:
         completed: bool = True,
     ) -> None:
         """Set task completion state for a specific date."""
+        await self.async_cleanup()
 
         self._completions.setdefault(date, {})[task_id] = completed
 
@@ -85,3 +89,21 @@ class TaskCompletionStorage:
         """Check whether a task is completed on a specific date."""
 
         return self._completions.get(date, {}).get(task_id, False)
+
+    async def async_cleanup(self) -> None:
+        """Remove completion states outside the current week."""
+
+        today = dt_util.now().date()
+
+        week_start = today - timedelta(days=today.weekday())
+        week_end = week_start + timedelta(days=6)
+
+        completions = {
+            stored_date: tasks
+            for stored_date, tasks in self._completions.items()
+            if week_start <= date.fromisoformat(stored_date) <= week_end
+        }
+
+        if completions != self._completions:
+            self._completions = completions
+            await self._store.async_save(self._completions)

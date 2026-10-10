@@ -514,6 +514,10 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
 
     .today-card .task-actor {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
         padding: 3px 7px;
 
         font-size: 10px;
@@ -523,6 +527,34 @@ export const WEEKLY_PLANNER_TODAY_STYLES = `
 
     .today-card .task-actor-label {
         padding: 2px 6px;
+    }
+
+    /* ---------- Task completion status ---------- */
+
+    .today-card .today-task-status {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        flex-shrink: 0;
+
+        width: 18px;
+        height: 18px;
+
+        border: 2px solid var(--secondary-text-color);
+        border-radius: 50%;
+
+        color: var(--secondary-text-color);
+    }
+
+    .today-card .today-task-status ha-icon {
+        --mdc-icon-size: 14px;
+    }
+
+    .today-card .today-task-status.completed {
+        border-color: #4caf50;
+        background: #4caf50;
+        color: white;
     }
 
 
