@@ -18,7 +18,7 @@ from .planner import (
     DuplicateTaskError,
     WeeklyPlanner,
 )
-from .storage import PlannerStorage
+from .storage import PlannerStorage, TaskCompletionStorage
 from .frontend import async_setup_frontend
 
 
@@ -46,6 +46,13 @@ ADD_TASK_SCHEMA = vol.Schema(
 REMOVE_TASK_SCHEMA = vol.Schema(
     {
         vol.Required("id"): cv.string,
+    }
+)
+
+COMPLETE_TASK_SCHEMA = vol.Schema(
+    {
+        vol.Required("task_id"): cv.string,
+        vol.Optional("completed", default=True): cv.boolean,
     }
 )
 
@@ -83,6 +90,9 @@ async def async_setup_entry(
     storage = PlannerStorage(hass)
     tasks = await storage.async_load()
 
+    completion_storage = TaskCompletionStorage(hass)
+    await completion_storage.async_load()
+
     planner = WeeklyPlanner(
         storage=storage,
         definition=definition,
@@ -93,6 +103,8 @@ async def async_setup_entry(
     await planner.reconcile_tasks_with_definition()
 
     entry.runtime_data = planner
+
+    hass.data.setdefault(DOMAIN, {})["completion_storage"] = completion_storage
 
     await hass.config_entries.async_forward_entry_setups(
         entry,
@@ -293,6 +305,90 @@ async def async_setup(
             "definition": planner.definition.to_dict(),
         }
 
+    async def async_complete_task(
+        call: ServiceCall,
+    ) -> ServiceResponse:
+        """Mark a scheduled task as completed today."""
+
+        entries = hass.config_entries.async_entries(DOMAIN)
+
+        if not entries:
+            return {
+                "success": False,
+                "error": "planner_not_found",
+            }
+
+        planner = entries[0].runtime_data
+        task_id = call.data["task_id"]
+
+        today = dt_util.now()
+        day = Day(today.strftime("%A").lower())
+        date = today.date().isoformat()
+
+        tasks = planner.get_tasks(day=day)
+
+        if not any(task.id == task_id for task in tasks):
+            return {
+                "success": False,
+                "error": "task_not_found_today",
+            }
+
+        completion_storage = hass.data[DOMAIN]["completion_storage"]
+
+        await completion_storage.async_set_completed(
+            task_id=task_id,
+            date=date,
+            completed=call.data["completed"],
+        )
+
+        hass.bus.async_fire(
+            f"{DOMAIN}_task_completion_changed",
+            {
+                "task_id": task_id,
+                "completed": call.data["completed"],
+                "date": date,
+            },
+        )
+
+        return {
+            "success": True,
+            "task_id": task_id,
+        }
+
+    async def async_get_completions(
+        call: ServiceCall,
+    ) -> ServiceResponse:
+        """Return today's task completion states."""
+
+        completion_storage = hass.data.get(
+            DOMAIN, {}
+        ).get("completion_storage")
+
+        if completion_storage is None:
+            return {"completions": {}}
+
+        today = dt_util.now().date().isoformat()
+
+        entries = hass.config_entries.async_entries(DOMAIN)
+
+        if not entries:
+            return {"completions": {}}
+
+        planner = entries[0].runtime_data
+        day = Day(dt_util.now().strftime("%A").lower())
+
+        tasks = planner.get_tasks(day=day)
+
+        return {
+            "completions": {
+                task.id: completion_storage.is_completed(
+                    task.id,
+                    today,
+                )
+                for task in tasks
+            }
+        }
+
     hass.services.async_register(
         DOMAIN,
         "get_definition",
@@ -336,6 +432,21 @@ async def async_setup(
         "get_tasks",
         async_get_tasks,
         schema=GET_TASKS_SCHEMA,
+        supports_response=SupportsResponse.ONLY,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "complete_task",
+        async_complete_task,
+        schema=COMPLETE_TASK_SCHEMA,
+        supports_response=SupportsResponse.OPTIONAL,
+    )
+
+    hass.services.async_register(
+        DOMAIN,
+        "get_completions",
+        async_get_completions,
         supports_response=SupportsResponse.ONLY,
     )
 

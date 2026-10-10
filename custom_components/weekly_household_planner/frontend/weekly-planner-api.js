@@ -34,6 +34,12 @@ export async function getDefinition(hass) {
     );
 }
 
+export async function getCompletions(hass) {
+    return callService(
+        hass,
+        "get_completions"
+    );
+}
 
 export async function addTask(
     hass,
