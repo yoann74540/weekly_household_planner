@@ -159,6 +159,14 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                     completed,
                 }
             );
+
+            this._completions = {
+                ...this._completions,
+                [task.id]: completed,
+            };
+
+            this._render();
+
         } catch (error) {
             console.error(
                 "Unable to update task completion",
