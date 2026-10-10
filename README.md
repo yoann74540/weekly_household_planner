@@ -21,7 +21,11 @@ The planner is generic: tasks can be performed by people, robots, or any other a
 - 📋 Duplicate tasks to other days
 - 🗑 Delete scheduled tasks
 - 🔧 Home Assistant actions/services for accessing and modifying the planner
-- 📆 Read-only Today card for displaying the current day's tasks
+- 📆 Today Card for displaying the current day's tasks
+- ✅ Mark daily tasks as completed or incomplete
+- 💾 Persistent task completion status
+- 🔄 Real-time task completion synchronization
+- 📅 Automatic daily completion reset
 
 ## Example
 
@@ -145,21 +149,24 @@ It allows you to:
 
 ## Today Card
 
-Weekly Household Planner also provides a compact, read-only Lovelace card designed to display only the tasks scheduled for the current day.
+Weekly Household Planner also provides a compact, interactive Lovelace card designed to display only the tasks scheduled for the current day.
 
 It is especially useful for wall-mounted dashboards and small displays such as the NSPanel Pro.
 
 The Today Card provides:
 
 - 📅 Automatic display of the current day's tasks.
-
 - 🎨 Color-coded task tiles based on the assigned actor.
-
 - 📱 A compact two-column layout optimized for small screens.
-
 - 👆 Tap a task to open a popup showing its details and parameters.
+- ✅ Mark tasks as completed or incomplete by tapping the status indicator.
+- 👤 Task completion is available for all actors, including people and robots.
+- 💾 Completion status is saved and restored after a page reload or Home Assistant restart.
+- 🔄 Real-time synchronization of completion status across dashboards.
+- 📅 Completion status is tracked separately for each day.
+- 🔒 Task scheduling and definitions cannot be modified from this card.
 
-- 🔒 Read-only access: tasks cannot be modified from this card.
+A gray outlined circle indicates an incomplete task. A green circle with a checkmark indicates a completed task.
 
 The Today Card uses the same planner configuration and schedule as the Weekly Planner Card, ensuring that both cards display consistent information.
 
@@ -180,6 +187,8 @@ The integration exposes the following actions:
 - `weekly_household_planner.add_task`
 - `weekly_household_planner.update_task`
 - `weekly_household_planner.remove_task`
+- `weekly_household_planner.get_completions`
+- `weekly_household_planner.complete_task`
 
 This makes it possible to use the planner from automations and other Home Assistant integrations.
 
@@ -250,6 +259,27 @@ The returned tasks can then be used in an automation:
 The script or automation is responsible for translating the generic task into device-specific actions.
 
 This keeps Weekly Household Planner independent from specific devices and integrations while allowing it to control real-world workflows through Home Assistant automations.
+
+### Task completion
+
+The `complete_task` action allows Home Assistant automations and scripts to mark a scheduled task as completed or incomplete.
+
+Example:
+
+```yaml
+action: weekly_household_planner.complete_task
+data:
+  task_id: "your-task-id"
+  completed: true
+```
+
+Set `completed` to `false` to mark the task as incomplete.
+
+The `get_completions` action retrieves the completion status of tasks scheduled for the current day.
+
+Completion changes are also broadcast through the `weekly_household_planner_task_completion_changed` event, allowing dashboards and automations to react to updates.
+
+Completion records are automatically cleaned up outside the current calendar week.
 
 
 ## How it works
