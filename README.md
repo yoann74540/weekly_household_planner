@@ -158,8 +158,9 @@ The Today Card provides:
 - 📅 Automatic display of the current day's tasks.
 - 🎨 Color-coded task tiles based on the assigned actor.
 - 📱 A compact two-column layout optimized for small screens.
-- 👆 Tap a task to open a popup showing its details and parameters.
-- ✅ Mark tasks as completed or incomplete by tapping the status indicator.
+- 👆 Short tap on a task to open a popup showing its details and parameters.
+- ✅ Long press (700 ms) anywhere on a task to mark it as completed or incomplete.
+- 🛡️ Long press prevents accidental task completion on touchscreens.
 - 👤 Task completion is available for all actors, including people and robots.
 - 💾 Completion status is saved and restored after a page reload or Home Assistant restart.
 - 🔄 Real-time synchronization of completion status across dashboards.
