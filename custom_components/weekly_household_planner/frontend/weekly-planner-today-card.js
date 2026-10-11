@@ -94,11 +94,17 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
 
     async _loadData() {
-        if (this._loading || !this._hass) {
+        if (!this._hass) {
+            return;
+        }
+
+        if (this._loading) {
+            this._reloadPending = true;
             return;
         }
 
         this._loading = true;
+        this._reloadPending = false;
         this._render();
 
         try {
@@ -130,6 +136,10 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         } finally {
             this._loading = false;
             this._render();
+            if (this._reloadPending) {
+                this._reloadPending = false;
+                this._loadData();
+            }
         }
     }
 
