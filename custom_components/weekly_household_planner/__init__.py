@@ -132,6 +132,10 @@ async def async_setup(
 ) -> bool:
     """Set up Weekly Household Planner."""
 
+    def notify_schedule_changed() -> None:
+        """Notify listeners that the weekly schedule has changed."""
+        hass.bus.async_fire(f"{DOMAIN}_schedule_changed")
+
     async def async_add_task(
         call: ServiceCall,
     ) -> ServiceResponse:
@@ -169,6 +173,8 @@ async def async_setup(
                 "error": "invalid_task",
             }
 
+        notify_schedule_changed()
+
         return {
             "success": True,
             "task": task.to_dict(),
@@ -189,6 +195,9 @@ async def async_setup(
         planner = entry.runtime_data
 
         success = await planner.remove_task(call.data["id"])
+
+        if success:
+            notify_schedule_changed()
 
         return {
             "success": success,
@@ -231,6 +240,8 @@ async def async_setup(
                 "success": False,
                 "error": "invalid_task",
             }
+
+        notify_schedule_changed()
 
         return {
             "success": True,

@@ -32,6 +32,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._loading = false;
         this._selectedTask = null;
         this._unsubscribeCompletion = null;
+        this._unsubscribeSchedule = null;
 
         this._currentDate = this._getTodayDate();
         this._dayTimer = null;
@@ -50,6 +51,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
         if (this.isConnected) {
             this._subscribeCompletionEvents();
+            this._subscribeScheduleEvents();
         }
 
         if (firstLoad) {
@@ -62,6 +64,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
     connectedCallback() {
         this._subscribeCompletionEvents();
+        this._subscribeScheduleEvents();
 
         this._dayTimer = setInterval(() => {
             this._checkDayChange();
@@ -82,15 +85,26 @@ class WeeklyPlannerTodayCard extends HTMLElement {
             this._unsubscribeCompletion();
             this._unsubscribeCompletion = null;
         }
+
+        if (this._unsubscribeSchedule) {
+            this._unsubscribeSchedule();
+            this._unsubscribeSchedule = null;
+        }
     }
 
 
     async _loadData() {
-        if (this._loading || !this._hass) {
+        if (!this._hass) {
+            return;
+        }
+
+        if (this._loading) {
+            this._reloadPending = true;
             return;
         }
 
         this._loading = true;
+        this._reloadPending = false;
         this._render();
 
         try {
@@ -122,6 +136,10 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         } finally {
             this._loading = false;
             this._render();
+            if (this._reloadPending) {
+                this._reloadPending = false;
+                this._loadData();
+            }
         }
     }
 
@@ -142,8 +160,23 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                     this._completions[task_id] = completed;
 
                     this._updateTaskStatus(task_id, completed);
+                    this._render();
                 },
                 "weekly_household_planner_task_completion_changed"
+            );
+    }
+
+    async _subscribeScheduleEvents() {
+        if (!this._hass || this._unsubscribeSchedule) {
+            return;
+        }
+
+        this._unsubscribeSchedule =
+            await this._hass.connection.subscribeEvents(
+                () => {
+                    this._loadData();
+                },
+                "weekly_household_planner_schedule_changed"
             );
     }
 
@@ -437,6 +470,10 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         const taskCount =
             tasks.length;
 
+        const completedCount = tasks.filter(
+            (task) => this._completions[task.id] === true
+        ).length;
+
         this.innerHTML = `
             <ha-card>
                 <style>
@@ -458,11 +495,8 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                         </div>
 
                         <div class="today-count">
-                            ${taskCount}
-                            ${taskCount > 1
-                ? "tâches"
-                : "tâche"
-            }
+                            ${completedCount}/${taskCount}
+                            ${taskCount > 1 ? "tâches" : "tâche"}
                         </div>
                     </div>
 
