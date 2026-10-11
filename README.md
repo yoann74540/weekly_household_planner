@@ -171,6 +171,15 @@ A gray outlined circle indicates an incomplete task. A green circle with a check
 
 The Today Card uses the same planner configuration and schedule as the Weekly Planner Card, ensuring that both cards display consistent information.
 
+### Real-time synchronization
+
+The Today Card automatically synchronizes schedule changes and task completion status across connected devices.
+
+- Instantly updates when tasks are added, modified, or removed.
+- Synchronizes task completion status between devices.
+- Supports non-administrator Home Assistant accounts.
+- Uses a custom WebSocket subscription for real-time updates without polling.
+
 
 ## Calendar
 
