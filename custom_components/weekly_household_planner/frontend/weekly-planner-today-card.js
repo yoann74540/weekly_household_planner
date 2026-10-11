@@ -31,8 +31,8 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._completions = {};
         this._loading = false;
         this._selectedTask = null;
-        this._unsubscribeCompletion = null;
-        this._unsubscribeSchedule = null;
+        this._unsubscribePlanner = null;
+        this._plannerSubscriptionPending = false;
 
         this._currentDate = this._getTodayDate();
         this._dayTimer = null;
@@ -50,8 +50,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         this._hass = hass;
 
         if (this.isConnected) {
-            this._subscribeCompletionEvents();
-            this._subscribeScheduleEvents();
+            this._subscribePlannerEvents();
         }
 
         if (firstLoad) {
@@ -63,8 +62,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
 
 
     connectedCallback() {
-        this._subscribeCompletionEvents();
-        this._subscribeScheduleEvents();
+        this._subscribePlannerEvents();
 
         this._dayTimer = setInterval(() => {
             this._checkDayChange();
@@ -81,14 +79,9 @@ class WeeklyPlannerTodayCard extends HTMLElement {
             this._dayTimer = null;
         }
 
-        if (this._unsubscribeCompletion) {
-            this._unsubscribeCompletion();
-            this._unsubscribeCompletion = null;
-        }
-
-        if (this._unsubscribeSchedule) {
-            this._unsubscribeSchedule();
-            this._unsubscribeSchedule = null;
+        if (this._unsubscribePlanner) {
+            this._unsubscribePlanner();
+            this._unsubscribePlanner = null;
         }
     }
 
@@ -143,41 +136,56 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         }
     }
 
-    async _subscribeCompletionEvents() {
-        if (!this._hass || this._unsubscribeCompletion) {
+    async _subscribePlannerEvents() {
+        if (
+            !this._hass ||
+            this._unsubscribePlanner ||
+            this._plannerSubscriptionPending
+        ) {
             return;
         }
 
-        this._unsubscribeCompletion =
-            await this._hass.connection.subscribeEvents(
-                (event) => {
-                    const { task_id, completed, date } = event.data;
+        this._plannerSubscriptionPending = true;
 
-                    if (date !== this._currentDate) {
-                        return;
+        try {
+            const unsubscribe =
+                await this._hass.connection.subscribeMessage(
+                    (message) => {
+                        if (message.type === "schedule_changed") {
+                            this._loadData();
+                        }
+
+                        if (message.type === "completion_changed") {
+                            if (message.date !== this._currentDate) {
+                                return;
+                            }
+
+                            this._completions = {
+                                ...this._completions,
+                                [message.task_id]: message.completed,
+                            };
+
+                            this._render();
+                        }
+                    },
+                    {
+                        type: "weekly_household_planner/subscribe",
                     }
+                );
 
-                    this._completions[task_id] = completed;
-
-                    this._updateTaskStatus(task_id, completed);
-                    this._render();
-                },
-                "weekly_household_planner_task_completion_changed"
+            if (this.isConnected) {
+                this._unsubscribePlanner = unsubscribe;
+            } else {
+                unsubscribe();
+            }
+        } catch (error) {
+            console.error(
+                "Unable to subscribe to planner events",
+                error
             );
-    }
-
-    async _subscribeScheduleEvents() {
-        if (!this._hass || this._unsubscribeSchedule) {
-            return;
+        } finally {
+            this._plannerSubscriptionPending = false;
         }
-
-        this._unsubscribeSchedule =
-            await this._hass.connection.subscribeEvents(
-                () => {
-                    this._loadData();
-                },
-                "weekly_household_planner_schedule_changed"
-            );
     }
 
     async _toggleTaskCompletion(task) {

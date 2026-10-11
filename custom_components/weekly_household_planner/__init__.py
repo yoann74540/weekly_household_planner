@@ -27,6 +27,7 @@ from .models import Day, Task
 
 from .definition import PlannerDefinition
 from homeassistant.util import dt as dt_util
+from .websocket import async_setup_websocket
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
@@ -460,6 +461,8 @@ async def async_setup(
         async_get_completions,
         supports_response=SupportsResponse.ONLY,
     )
+
+    async_setup_websocket(hass)
 
     await async_setup_frontend(hass)
 
