@@ -142,6 +142,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                     this._completions[task_id] = completed;
 
                     this._updateTaskStatus(task_id, completed);
+                    this._render();
                 },
                 "weekly_household_planner_task_completion_changed"
             );
@@ -437,6 +438,10 @@ class WeeklyPlannerTodayCard extends HTMLElement {
         const taskCount =
             tasks.length;
 
+        const completedCount = tasks.filter(
+            (task) => this._completions[task.id] === true
+        ).length;
+
         this.innerHTML = `
             <ha-card>
                 <style>
@@ -458,11 +463,8 @@ class WeeklyPlannerTodayCard extends HTMLElement {
                         </div>
 
                         <div class="today-count">
-                            ${taskCount}
-                            ${taskCount > 1
-                ? "tâches"
-                : "tâche"
-            }
+                            ${completedCount}/${taskCount}
+                            ${taskCount > 1 ? "tâches" : "tâche"}
                         </div>
                     </div>
 
