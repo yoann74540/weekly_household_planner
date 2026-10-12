@@ -51,7 +51,7 @@ class WeeklyPlannerCard extends HTMLElement {
     }
 
     connectedCallback() {
-        if (this._hass && !this._schedule) {
+        if (this._hass) {
             this._loadSchedule();
         }
     }

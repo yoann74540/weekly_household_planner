@@ -68,7 +68,7 @@ class WeeklyPlannerTodayCard extends HTMLElement {
             this._checkDayChange();
         }, 60_000);
 
-        if (this._hass && !this._schedule) {
+        if (this._hass) {
             this._loadData();
         }
     }
