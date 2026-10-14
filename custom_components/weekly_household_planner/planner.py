@@ -119,15 +119,39 @@ class WeeklyPlanner:
         task: Task,
         exclude_id: str | None = None,
     ) -> bool:
-        """Return whether the same task and actor already exist for the day."""
+        def values_overlap(a, b):
+            if isinstance(a, list) and isinstance(b, list):
+                return any(value in b for value in a)
 
-        return any(
-            existing.id != exclude_id
-            and existing.day == task.day
-            and existing.task == task.task
-            and existing.who == task.who
-            for existing in self.tasks
-        )
+            return a == b
+
+        for existing in self.tasks:
+            if existing.id == exclude_id:
+                continue
+
+            if (
+                existing.day != task.day
+                or existing.who != task.who
+                or existing.task != task.task
+            ):
+                continue
+
+            if existing.parameters.keys() != task.parameters.keys():
+                continue
+
+            if not task.parameters:
+                return True
+
+            if any(
+                values_overlap(
+                    existing.parameters[key],
+                    task.parameters[key],
+                )
+                for key in task.parameters
+            ):
+                return True
+
+        return False
 
     async def reconcile_tasks_with_definition(self) -> None:
         """Update scheduled tasks to match the current definition."""
