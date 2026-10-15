@@ -18,17 +18,6 @@ from .models import Day
 from .planner import WeeklyPlanner
 
 
-DAY_TO_WEEKDAY = {
-    Day.MONDAY: 0,
-    Day.TUESDAY: 1,
-    Day.WEDNESDAY: 2,
-    Day.THURSDAY: 3,
-    Day.FRIDAY: 4,
-    Day.SATURDAY: 5,
-    Day.SUNDAY: 6,
-}
-
-
 async def async_setup_entry(
     hass: HomeAssistant,
     entry: ConfigEntry,
@@ -101,7 +90,7 @@ class WeeklyHouseholdPlannerCalendar(CalendarEntity):
         start_date: datetime,
         end_date: datetime,
     ) -> list[CalendarEvent]:
-        """Build calendar events from weekly planner tasks."""
+        """Build calendar events from scheduled tasks."""
 
         events: list[CalendarEvent] = []
 
@@ -109,19 +98,13 @@ class WeeklyHouseholdPlannerCalendar(CalendarEntity):
         last_date = end_date.date()
 
         while current_date <= last_date:
-            weekday = current_date.weekday()
-
-            for day in Day:
-                if DAY_TO_WEEKDAY[day] != weekday:
-                    continue
-
-                for task in self._planner.get_tasks_for_day(day):
-                    events.append(
-                        self._task_to_event(
-                            task,
-                            current_date,
-                        )
+            for task in self._planner.get_tasks_for_date(current_date):
+                events.append(
+                    self._task_to_event(
+                        task,
+                        current_date,
                     )
+                )
 
             current_date += timedelta(days=1)
 
