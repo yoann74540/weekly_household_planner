@@ -126,13 +126,14 @@ export function renderEditor({
         )}
             </div>
 
-            ${editor.mode !== "edit"
-            ? renderRepeatDays(
-                editor,
-                repeatDaysExpanded
-            )
+            ${editor.mode !== "edit" && editor.recurrence === null
+            ? renderRepeatDays(editor, repeatDaysExpanded)
             : ""
         }
+
+            ${editor.repeatDays?.length
+            ? ""
+            : renderRecurrence(editor)}
 
             ${renderError(editor)}
 
@@ -238,6 +239,7 @@ export function createAddEditor(
         parameters: {},
         repeatDays: [],
         error: null,
+        recurrence: null,
     };
 
     initializeParameters(
@@ -261,6 +263,9 @@ export function createEditEditor(
         parameters: structuredClone(
             task.parameters ?? {}
         ),
+        recurrence: structuredClone(
+            task.recurrence ?? null
+        ),
         error: null,
     };
 }
@@ -280,6 +285,10 @@ export function createDuplicateEditor(
 
         parameters: structuredClone(
             task.parameters ?? {}
+        ),
+
+        recurrence: structuredClone(
+            task.recurrence ?? null
         ),
 
         repeatDays: [],
@@ -312,6 +321,50 @@ export async function saveEditor(
     hass,
     editor
 ) {
+
+    if (
+        editor.recurrence !== null &&
+        editor.repeatDays?.length > 0
+    ) {
+        editor.error = "La récurrence et « Répéter aussi » ne peuvent pas être utilisés ensemble.";
+
+        return {
+            success: false,
+            error: "invalid_recurrence",
+        };
+    }
+
+    if (editor.recurrence !== null) {
+
+        const { interval_weeks, start_date } = editor.recurrence;
+
+        if (!Number.isInteger(interval_weeks) || interval_weeks < 1) {
+            editor.error = "L'intervalle doit être un nombre entier supérieur ou égal à 1.";
+            return { success: false, error: "invalid_recurrence" };
+        }
+
+        const date = new Date(`${start_date}T12:00:00`);
+
+        if (
+            !start_date ||
+            Number.isNaN(date.getTime()) ||
+            date.toISOString().slice(0, 10) !== start_date
+        ) {
+            editor.error = "Veuillez sélectionner une date de début valide.";
+            return { success: false, error: "invalid_recurrence" };
+        }
+
+        const days = [
+            "sunday", "monday", "tuesday", "wednesday",
+            "thursday", "friday", "saturday",
+        ];
+
+        if (days[date.getDay()] !== editor.day) {
+            editor.error = "La date de début doit correspondre au jour sélectionné.";
+            return { success: false, error: "invalid_recurrence" };
+        }
+    }
+
     const parameters = {};
 
     for (
@@ -345,6 +398,9 @@ export async function saveEditor(
                 who: editor.who,
                 task: editor.task,
                 parameters,
+                ...(editor.recurrence !== null
+                    ? { recurrence: editor.recurrence }
+                    : {}),
             }
         );
     }
@@ -376,6 +432,9 @@ export async function saveEditor(
                     who: editor.who,
                     task: editor.task,
                     parameters,
+                    ...(editor.recurrence !== null
+                        ? { recurrence: editor.recurrence }
+                        : {}),
                 }
             );
 
@@ -422,12 +481,48 @@ export function attachEditorListeners({
     );
 
     root.querySelector(
+        '[data-field="recurrence-mode"]'
+    )?.addEventListener("change", (event) => {
+        if (event.target.value === "weekly") {
+            editor.recurrence = null;
+        } else {
+            editor.recurrence = {
+                interval_weeks: 2,
+                start_date: getNextDateForDay(editor.day),
+            };
+        }
+
+        editor.error = null;
+        render();
+    });
+
+    root.querySelector(
+        '[data-field="interval-weeks"]'
+    )?.addEventListener("change", (event) => {
+        editor.recurrence.interval_weeks =
+            Number(event.target.value);
+
+        editor.error = null;
+    });
+
+    root.querySelector(
+        '[data-field="start-date"]'
+    )?.addEventListener("change", (event) => {
+        editor.recurrence.start_date = event.target.value;
+        editor.error = null;
+    });
+
+    root.querySelector(
         '[data-field="day"]'
     )?.addEventListener(
         "change",
         (event) => {
             editor.day =
                 event.target.value;
+
+            if (editor.recurrence !== null) {
+                editor.recurrence.start_date = getNextDateForDay(editor.day);
+            }
 
             editor.error = null;
 
@@ -556,6 +651,25 @@ export function attachEditorListeners({
             await save();
         }
     );
+}
+
+function getNextDateForDay(day) {
+    const days = [
+        "sunday", "monday", "tuesday", "wednesday",
+        "thursday", "friday", "saturday"
+    ];
+
+    const date = new Date();
+    const targetDay = days.indexOf(day);
+    const offset = (targetDay - date.getDay() + 7) % 7;
+
+    date.setDate(date.getDate() + offset);
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const dayOfMonth = String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${dayOfMonth}`;
 }
 
 function renderDuplicateEditor({
@@ -713,6 +827,52 @@ function renderParameters(
             `;
         })
         .join("");
+}
+
+function renderRecurrence(editor) {
+    return `
+        <label class="field">
+            <span>Fréquence</span>
+
+            <select data-field="recurrence-mode">
+                <option
+                    value="weekly"
+                    ${editor.recurrence === null ? "selected" : ""}
+                >
+                    Toutes les semaines
+                </option>
+
+                <option
+                    value="custom"
+                    ${editor.recurrence !== null ? "selected" : ""}
+                >
+                    Toutes les X semaines
+                </option>
+            </select>
+        </label>
+
+        ${editor.recurrence !== null ? `
+            <label class="field">
+                <span>Intervalle (semaines)</span>
+                <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    data-field="interval-weeks"
+                    value="${editor.recurrence.interval_weeks}"
+                >
+            </label>
+
+            <label class="field">
+                <span>Date de début</span>
+                <input
+                    type="date"
+                    data-field="start-date"
+                    value="${editor.recurrence.start_date}"
+                >
+            </label>
+        ` : ""}
+    `;
 }
 
 

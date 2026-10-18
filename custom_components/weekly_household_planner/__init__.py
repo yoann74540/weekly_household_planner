@@ -1,5 +1,7 @@
 """The Weekly Household Planner integration."""
 
+from unittest.mock import call
+
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
@@ -23,7 +25,7 @@ from .frontend import async_setup_frontend
 
 
 from .const import DOMAIN
-from .models import Day, Task
+from .models import Day, Task, Recurrence
 
 from .definition import PlannerDefinition
 from homeassistant.util import dt as dt_util
@@ -35,12 +37,23 @@ PLATFORMS = [
     Platform.CALENDAR,
 ]
 
+RECURRENCE_SCHEMA = vol.Schema(
+    {
+        vol.Required("interval_weeks"): vol.All(
+            vol.Coerce(int),
+            vol.Range(min=1),
+        ),
+        vol.Required("start_date"): cv.string,
+    }
+)
+
 ADD_TASK_SCHEMA = vol.Schema(
     {
         vol.Required("day"): vol.In([day.value for day in Day]),
         vol.Required("who"): cv.string,
         vol.Required("task"): cv.string,
         vol.Optional("parameters", default={}): dict,
+        vol.Optional("recurrence"): RECURRENCE_SCHEMA,
     }
 )
 
@@ -64,6 +77,7 @@ UPDATE_TASK_SCHEMA = vol.Schema(
         vol.Required("who"): cv.string,
         vol.Required("task"): cv.string,
         vol.Optional("parameters", default={}): dict,
+        vol.Optional("recurrence"): RECURRENCE_SCHEMA,
     }
 )
 
@@ -153,12 +167,25 @@ async def async_setup(
         entry = entries[0]
         planner = entry.runtime_data
 
-        task = Task(
-            day=Day(call.data["day"]),
-            who=call.data["who"],
-            task=call.data["task"],
-            parameters=call.data.get("parameters", {}),
-        )
+        recurrence_data = call.data.get("recurrence")
+
+        try:
+            task = Task(
+                day=Day(call.data["day"]),
+                who=call.data["who"],
+                task=call.data["task"],
+                parameters=call.data.get("parameters", {}),
+                recurrence=(
+                    Recurrence.from_dict(recurrence_data)
+                    if recurrence_data is not None
+                    else None
+                ),
+            )
+        except (ValueError, TypeError, KeyError):
+            return {
+                "success": False,
+                "error": "invalid_recurrence"
+            }
 
         try:
             success = await planner.add_task(task)
@@ -218,12 +245,25 @@ async def async_setup(
         entry = entries[0]
         planner = entry.runtime_data
 
-        task = Task(
-            day=Day(call.data["day"]),
-            who=call.data["who"],
-            task=call.data["task"],
-            parameters=call.data.get("parameters", {}),
-        )
+        recurrence_data = call.data.get("recurrence")
+
+        try:
+            task = Task(
+                day=Day(call.data["day"]),
+                who=call.data["who"],
+                task=call.data["task"],
+                parameters=call.data.get("parameters", {}),
+                recurrence=(
+                    Recurrence.from_dict(recurrence_data)
+                    if recurrence_data is not None
+                    else None
+                ),
+            )
+        except (ValueError, TypeError, KeyError):
+            return {
+                "success": False,
+                "error": "invalid_recurrence",
+            }
 
         try:
             success = await planner.update_task(
@@ -279,19 +319,16 @@ async def async_setup(
         requested_day = call.data.get("day")
 
         if requested_day == "today":
-            day = Day(
-                dt_util.now().strftime("%A").lower()
-            )
-        elif requested_day is not None:
-            day = Day(requested_day)
+            tasks = planner.get_tasks_for_date(dt_util.now().date())
         else:
-            day = None
+            day = Day(requested_day) if requested_day is not None else None
+            tasks = planner.get_tasks(day=day)
 
-        tasks = planner.get_tasks(
-            day=day,
-            who=call.data.get("who"),
-            task=call.data.get("task"),
-        )
+        if call.data.get("who") is not None:
+            tasks = [t for t in tasks if t.who == call.data["who"]]
+
+        if call.data.get("task") is not None:
+            tasks = [t for t in tasks if t.task == call.data["task"]]
 
         return {
             "tasks": [
@@ -333,11 +370,10 @@ async def async_setup(
         planner = entries[0].runtime_data
         task_id = call.data["task_id"]
 
-        today = dt_util.now()
-        day = Day(today.strftime("%A").lower())
-        date = today.date().isoformat()
+        today = dt_util.now().date()
+        date = today.isoformat()
 
-        tasks = planner.get_tasks(day=day)
+        tasks = planner.get_tasks_for_date(today)
 
         if not any(task.id == task_id for task in tasks):
             return {
@@ -379,7 +415,7 @@ async def async_setup(
         if completion_storage is None:
             return {"completions": {}}
 
-        today = dt_util.now().date().isoformat()
+        today = dt_util.now().date()
 
         entries = hass.config_entries.async_entries(DOMAIN)
 
@@ -387,15 +423,14 @@ async def async_setup(
             return {"completions": {}}
 
         planner = entries[0].runtime_data
-        day = Day(dt_util.now().strftime("%A").lower())
 
-        tasks = planner.get_tasks(day=day)
+        tasks = planner.get_tasks_for_date(today)
 
         return {
             "completions": {
                 task.id: completion_storage.is_completed(
                     task.id,
-                    today,
+                    today.isoformat(),
                 )
                 for task in tasks
             }

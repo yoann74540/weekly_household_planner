@@ -6,6 +6,7 @@ from .definition import (
 )
 from .models import Day, Task
 from .storage import PlannerStorage
+from datetime import date
 
 
 class DuplicateTaskError(Exception):
@@ -80,6 +81,18 @@ class WeeklyPlanner:
             if task.day == day
         ]
 
+    def get_tasks_for_date(
+        self,
+        target_date: date,
+    ) -> list[Task]:
+        """Return tasks scheduled for a specific date."""
+
+        return [
+            task
+            for task in self.tasks
+            if self.occurs_on(task, target_date)
+        ]
+
     def get_schedule(self) -> dict[str, list[dict]]:
         """Return the complete weekly schedule."""
         return {
@@ -152,6 +165,26 @@ class WeeklyPlanner:
                 return True
 
         return False
+
+    def occurs_on(self, task: Task, target_date: date) -> bool:
+        """Check whether a task is scheduled on a given date."""
+
+        if task.day.value != target_date.strftime("%A").lower():
+            return False
+
+        if task.recurrence is None:
+            return True
+
+        start_date = date.fromisoformat(
+            task.recurrence.start_date
+        )
+
+        if target_date < start_date:
+            return False
+
+        weeks = (target_date - start_date).days // 7
+
+        return weeks % task.recurrence.interval_weeks == 0
 
     async def reconcile_tasks_with_definition(self) -> None:
         """Update scheduled tasks to match the current definition."""

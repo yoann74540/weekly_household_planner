@@ -144,6 +144,13 @@ class WeeklyPlannerCard extends HTMLElement {
                 );
 
             if (!response?.success) {
+
+                if (response?.error === "invalid_recurrence") {
+                    this._editor.error ??= "La récurrence sélectionnée est invalide.";
+                    this._render();
+                    return;
+                }
+
                 if (
                     response?.error ===
                     "duplicate_task"

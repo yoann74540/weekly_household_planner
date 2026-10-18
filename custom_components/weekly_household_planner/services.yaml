@@ -37,6 +37,20 @@ add_task:
       selector:
         object:
 
+    recurrence:
+      name: Recurrence
+      description: >
+        Optional recurrence configuration.
+        Use interval_weeks to specify the frequency and
+        start_date (YYYY-MM-DD) to define the first occurrence.
+        The start date must match the selected day.
+      required: false
+      example:
+        interval_weeks: 2
+        start_date: "2026-10-19"
+      selector:
+        object:
+
 remove_task:
   name: Remove task
   description: Remove a task from the weekly planner.
@@ -91,6 +105,43 @@ update_task:
       required: false
       selector:
         object:
+
+    recurrence:
+      name: Recurrence
+      description: >
+        Optional recurrence configuration.
+        Use interval_weeks to specify the frequency and
+        start_date (YYYY-MM-DD) to define the first occurrence.
+        The start date must match the selected day.
+      required: false
+      example:
+        interval_weeks: 2
+        start_date: "2026-10-19"
+      selector:
+        object:
+
+complete_task:
+  name: Complete task
+  description: Mark a task scheduled for today as completed or not completed.
+  fields:
+    task_id:
+      name: Task ID
+      description: ID of the task to complete. The task must be scheduled for today.
+      required: true
+      selector:
+        text:
+
+    completed:
+      name: Completed
+      description: Mark the task as completed or not completed.
+      required: false
+      default: true
+      selector:
+        boolean:
+
+get_completions:
+  name: Get completions
+  description: Return the completion status of tasks scheduled for today.
 
 get_schedule:
   name: Get schedule
