@@ -20,6 +20,7 @@ The planner is generic: tasks can be performed by people, robots, or any other a
 - ✏️ Edit scheduled tasks
 - 📋 Duplicate tasks to other days
 - 🗑 Delete scheduled tasks
+- 🔁 Optional recurrence every N weeks, with a configurable start date
 - 🔧 Home Assistant actions/services for accessing and modifying the planner
 - 📆 Today Card for displaying the current day's tasks
 - ✅ Mark daily tasks as completed or incomplete
@@ -145,7 +146,35 @@ It allows you to:
 - add the same task to multiple days;
 - edit a task;
 - duplicate a task to other days;
+- configure an optional recurrence;
 - delete a task.
+
+### Task recurrence
+
+By default, a task repeats **every week** on its selected weekday.
+
+You can optionally configure a recurrence to repeat it **every N weeks**, starting from a specific date. For example, a task scheduled for Monday with an interval of `2` weeks repeats every other Monday.
+
+A recurrence has two settings:
+
+- `interval_weeks`: the number of weeks between occurrences (minimum `1`);
+- `start_date`: the first occurrence date, in `YYYY-MM-DD` format.
+
+**The start date must fall on the task's selected weekday.**
+
+For example:
+
+```yaml
+recurrence:
+  interval_weeks: 2
+  start_date: "2026-10-19"
+```
+
+This schedules a Monday task every two weeks, starting October 19, 2026.
+
+Recurrence affects which dates a task appears on in the Today Card, calendar and date-specific task queries. Editing a recurring task updates its recurrence; deleting the task removes its future occurrences.
+
+**Recurrence is different from “Repeat on multiple days.”** Repeating a task on several weekdays creates separate tasks, which can be edited or deleted independently. It does not create a single task shared across those days.
 
 ## Today Card
 
@@ -185,7 +214,7 @@ The Today Card automatically synchronizes schedule changes and task completion s
 
 Weekly Household Planner also creates a native Home Assistant calendar entity.
 
-Scheduled tasks can therefore be viewed using Home Assistant's standard calendar interface.
+Scheduled tasks can therefore be viewed using Home Assistant's standard calendar interface. Calendar occurrences respect each task's optional recurrence interval and start date.
 
 ## Home Assistant actions
 
@@ -204,6 +233,8 @@ This makes it possible to use the planner from automations and other Home Assist
 
 ### Example
 
+#### Add a task
+
 ```yaml
 action: weekly_household_planner.add_task
 data:
@@ -215,6 +246,26 @@ data:
       - kitchen
       - living_room
 ```
+
+#### Add a recurring task
+
+Both `add_task` and `update_task` accept an optional `recurrence` object. When omitted, the task follows the normal weekly schedule.
+
+```yaml
+action: weekly_household_planner.add_task
+data:
+  day: monday
+  who: robot
+  task: vacuum
+  parameters:
+    room:
+      - kitchen
+  recurrence:
+    interval_weeks: 2
+    start_date: "2026-10-19"
+```
+
+For `update_task`, supply the existing task `id` together with its task fields and optional `recurrence` object.
 
 ## Using tasks in automations
 
@@ -247,6 +298,8 @@ tasks:
         - kitchen
         - living_room
 ```
+
+Recurring tasks may also include a recurrence object in their returned data.
 
 The returned tasks can then be used in an automation:
 
