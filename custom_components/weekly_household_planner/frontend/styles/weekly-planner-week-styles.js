@@ -425,4 +425,56 @@ export const WEEKLY_PLANNER_WEEK_STYLES = `
 
         cursor: default;
     }
+
+    .task-inactive {
+        opacity: 0.45;
+    }
+
+    .task-inactive .task-actions {
+        opacity: 1;
+    }
+
+    .task-recurrence {
+        font-size: 11px;
+        font-style: italic;
+        color: var(--secondary-text-color);
+        white-space: nowrap;
+        margin-left: auto;
+    }
+
+    .task-actor {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .toggle-recurrences {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        width: 36px;
+        height: 36px;
+
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+
+        background: transparent;
+        color: var(--secondary-text-color);
+
+        cursor: pointer;
+    }
+
+    .toggle-recurrences ha-icon {
+        --mdc-icon-size: 22px;
+    }
+
+    .header-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+    }
 `;
