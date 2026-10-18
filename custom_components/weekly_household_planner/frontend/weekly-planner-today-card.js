@@ -249,7 +249,49 @@ class WeeklyPlannerTodayCard extends HTMLElement {
     _getTodayTasks() {
         const day = this._getToday();
 
-        return this._schedule?.[day] ?? [];
+        return (this._schedule?.[day] ?? [])
+            .filter((task) => this._isTaskActiveToday(task));
+    }
+
+    _isTaskActiveToday(task) {
+        if (!task.recurrence) {
+            return true;
+        }
+
+        const { interval_weeks, start_date } = task.recurrence;
+
+        if (!Number.isInteger(interval_weeks) || interval_weeks < 1) {
+            return false;
+        }
+
+        const start = new Date(`${start_date}T00:00:00`);
+
+        if (Number.isNaN(start.getTime())) {
+            return false;
+        }
+
+        const today = new Date();
+
+        const startUTC = Date.UTC(
+            start.getFullYear(),
+            start.getMonth(),
+            start.getDate()
+        );
+
+        const todayUTC = Date.UTC(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+        );
+
+        const daysBetween = Math.round(
+            (todayUTC - startUTC) / 86400000
+        );
+
+        const weeksBetween = Math.floor(daysBetween / 7);
+
+        return daysBetween >= 0 &&
+            weeksBetween % interval_weeks === 0;
     }
 
 
