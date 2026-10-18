@@ -35,6 +35,7 @@ class WeeklyPlannerCard extends HTMLElement {
         this._definition = null;
         this._editor = null;
         this._repeatDaysExpanded = false;
+        this._showInactiveRecurrences = false;
     }
 
     setConfig(config) {
@@ -292,7 +293,8 @@ class WeeklyPlannerCard extends HTMLElement {
         const content = renderWeek(
             this._schedule,
             this._expandedDay,
-            this._definition?.actor_colors ?? {}
+            this._definition?.actor_colors ?? {},
+            this._showInactiveRecurrences
         );
 
         this.innerHTML = `
@@ -319,18 +321,35 @@ class WeeklyPlannerCard extends HTMLElement {
                 })
                 : `
                                 <div class="header">
-                                    <div class="title">
-                                        Weekly Household Planner
+                                    <div class="header-title">
+                                        <button
+                                            class="toggle-recurrences"
+                                            data-action="toggle-recurrences"
+                                            title="${this._showInactiveRecurrences
+                    ? "Masquer les récurrences inactives"
+                    : "Afficher les récurrences inactives"}"
+                                            aria-label="${this._showInactiveRecurrences
+                    ? "Masquer les récurrences inactives"
+                    : "Afficher les récurrences inactives"}"
+                                            aria-pressed="${this._showInactiveRecurrences}"
+                                        >
+                                            <ha-icon
+                                                icon="${this._showInactiveRecurrences
+                    ? "mdi:eye"
+                    : "mdi:eye-off"}"
+                                            ></ha-icon>
+                                        </button>
+
+                                        <div class="title">
+                                            Weekly Household Planner
+                                        </div>
                                     </div>
 
                                     <button
                                         class="add-main"
                                         data-action="add"
                                     >
-                                        <ha-icon
-                                            icon="mdi:plus"
-                                        ></ha-icon>
-
+                                        <ha-icon icon="mdi:plus"></ha-icon>
                                         Ajouter
                                     </button>
                                 </div>
@@ -426,6 +445,13 @@ class WeeklyPlannerCard extends HTMLElement {
                         await this._deleteTask(
                             element.dataset.taskId
                         );
+                        break;
+
+                    case "toggle-recurrences":
+                        this._showInactiveRecurrences =
+                            !this._showInactiveRecurrences;
+
+                        this._render();
                         break;
                 }
             }
